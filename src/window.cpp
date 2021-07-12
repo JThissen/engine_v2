@@ -29,6 +29,15 @@ namespace engine {
       return;
     }
 
+    glfwMakeContextCurrent(window);
+    int loadedGL = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+
+    if(!loadedGL) {
+      std::cout << "Could not load OpenGL functions." << std::endl;
+      glfwTerminate();
+      return;
+    }
+
     glfwSwapInterval(1);
     setCallbacks();
   }

@@ -15,7 +15,7 @@ namespace engine {
     queue = std::queue<std::function<void()>>();
     running = true;
     eventBusThread.attach(std::thread([this](){
-        entry();
+      entry();
     }));
   }
 
@@ -27,11 +27,13 @@ namespace engine {
 
   void EventBus::entry() {
     while(running) {
-      std::function<void()> func = queue.front();
-      if(func) {
-        std::lock_guard<std::mutex> lock(mutex);
-        queue.pop();
-        func();
+      if(queue.size() > 0) {
+        std::function<void()> func = queue.front();
+        if(func != nullptr) {
+          std::lock_guard<std::mutex> lock(mutex);
+          queue.pop();
+          func();
+        }
       }
     }
   }

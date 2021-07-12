@@ -2,8 +2,10 @@
 
 namespace engine {
   KeyPressedEvent::KeyPressedEvent(int key, bool isRepeated) 
-    : key(key), isRepeated(isRepeated) {
+    : keyCode(static_cast<Key::KeyCode>(key)), isRepeated(isRepeated) {
       eventType = EventType::KeyPressed;
+      auto f = Key::map.find(static_cast<Key::KeyCode>(key));
+      this->key = (f != Key::map.end()) ? f->second : "Key undefined";
   }
 
   void KeyPressedEvent::publish() {
@@ -13,8 +15,10 @@ namespace engine {
   }
 
   KeyReleasedEvent::KeyReleasedEvent(int key) 
-    : key(key), isRepeated(isRepeated) {
+    : keyCode(static_cast<Key::KeyCode>(key)), isRepeated(isRepeated) {
       eventType = EventType::KeyReleased;
+      auto f = Key::map.find(static_cast<Key::KeyCode>(key));
+      this->key = (f != Key::map.end()) ? f->second : "Key undefined";
   }
 
   void KeyReleasedEvent::publish() {

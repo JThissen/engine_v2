@@ -14,6 +14,7 @@ set(CPP_FILES
   src/keyEvent.cpp
   src/mouseEvent.cpp
   src/windowEvent.cpp
+  src/key.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})
