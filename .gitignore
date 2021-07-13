@@ -33,7 +33,6 @@
 
 # Other
 build
-external
 .vscode
 *.ps1
 *.sh

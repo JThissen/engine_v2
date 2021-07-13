@@ -6,7 +6,7 @@
 namespace engine {
 	class Key {
 		public:
-		 enum class KeyCode {
+		enum class KeyCode {
     	Space               = 32,
 			Apostrophe          = 39, /* ' */
 			Comma               = 44, /* , */

@@ -1,7 +1,6 @@
 #include "key.hpp"
 
 namespace engine {
-	
 	std::unordered_map<Key::KeyCode, std::string> Key::map = {
 		{ Key::KeyCode::Space       , "Space" },
 		{ Key::KeyCode::Apostrophe  , "Apostrophe" },

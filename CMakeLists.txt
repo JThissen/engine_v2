@@ -39,9 +39,24 @@ endif()
 
 add_subdirectory(external/glad)
 add_subdirectory(external/glfw) 
-target_include_directories(${PROJECT_NAME} PUBLIC external/glfw/include)
-target_link_directories(${PROJECT_NAME} PUBLIC external/glfw/src)
-target_link_libraries(${PROJECT_NAME} glad glfw)
+add_subdirectory(external/glm)
+
+target_include_directories(${PROJECT_NAME} 
+  PUBLIC external/glfw/include
+  PUBLIC external/glm/glm
+)
+
+# link_directories is default path is ./build
+target_link_directories(${PROJECT_NAME} 
+  PUBLIC external/glfw/src
+  PUBLIC external/glm
+)
+
+target_link_libraries(${PROJECT_NAME} 
+  glad 
+  glfw
+  glm
+)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
