@@ -4,9 +4,6 @@ namespace engine {
   DeltaTime::DeltaTime(float time) 
     : time(time) {}
 
-  DeltaTime::operator float() {
-    return time;
-  }
 
   float DeltaTime::seconds() {
     return time;

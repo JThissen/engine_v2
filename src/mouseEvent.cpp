@@ -1,4 +1,5 @@
 #include "mouseEvent.hpp"
+#include "app.hpp"
 
 namespace engine {
   MousePressedEvent::MousePressedEvent(int button) 
@@ -10,6 +11,8 @@ namespace engine {
     std::stringstream ss;
     ss << "MousePressedEvent: " << button << ".";
     std::cout << ss.str() << std::endl;
+    App& app = App::get();
+    app.event(*this);
   }
 
   MouseReleasedEvent::MouseReleasedEvent(int button) 
@@ -21,6 +24,8 @@ namespace engine {
     std::stringstream ss;
     ss << "MouseReleasedEvent: " << button << ".";
     std::cout << ss.str() << std::endl;
+    App& app = App::get();
+    app.event(*this);
   }
 
   MouseScrolledEvent::MouseScrolledEvent(int xOffset, int yOffset) 
@@ -32,6 +37,8 @@ namespace engine {
     std::stringstream ss;
     ss << "MouseScrolledEvent: " << xOffset << ", " << yOffset << ".";
     std::cout << ss.str() << std::endl;
+    App& app = App::get();
+    app.event(*this);
   }
 
   MousePositionEvent::MousePositionEvent(int x, int y) 
@@ -43,5 +50,7 @@ namespace engine {
     std::stringstream ss;
     ss << "MousePositionEvent: " << x << ", " << y << ".";
     std::cout << ss.str() << std::endl;
+    App& app = App::get();
+    app.event(*this);
   }
 }

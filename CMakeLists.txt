@@ -8,13 +8,22 @@ set(CPP_FILES
   src/main.cpp
   src/window.cpp
   src/app.cpp
-  src/deltatime.cpp
+  src/deltaTime.cpp
+  src/event.cpp
   src/eventBusThread.cpp
   src/eventBus.cpp
   src/keyEvent.cpp
   src/mouseEvent.cpp
   src/windowEvent.cpp
   src/key.cpp
+  src/layer.cpp
+  src/layers.cpp
+  src/testLayer.cpp
+  src/sandbox.cpp
+  src/imGuiLayer.cpp
+  src/imgui_impl_opengl3.cpp
+  src/windowInput.cpp
+  src/mouse.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})
@@ -40,22 +49,26 @@ endif()
 add_subdirectory(external/glad)
 add_subdirectory(external/glfw) 
 add_subdirectory(external/glm)
+add_subdirectory(external/imgui)
 
 target_include_directories(${PROJECT_NAME} 
   PUBLIC external/glfw/include
   PUBLIC external/glm/glm
+  PUBLIC external/imgui
 )
 
-# link_directories is default path is ./build
+# link_directories default path is ./build
 target_link_directories(${PROJECT_NAME} 
   PUBLIC external/glfw/src
   PUBLIC external/glm
+  PUBLIC external/imgui
 )
 
 target_link_libraries(${PROJECT_NAME} 
-  glad 
+  glad
   glfw
   glm
+  imgui
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

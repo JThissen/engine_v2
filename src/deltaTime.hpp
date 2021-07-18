@@ -1,5 +1,5 @@
-#ifndef DELTATIME_H
-#define DELTATIME_H
+#ifndef DELTA_TIME_H
+#define DELTA_TIME_H
 
 namespace engine {
   class DeltaTime {
@@ -7,7 +7,6 @@ namespace engine {
     float time;
   public:
     DeltaTime(float time = 0.0f);
-    operator float();
     float seconds();
     float milliseconds();
   };

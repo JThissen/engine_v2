@@ -1,4 +1,5 @@
 #include "windowEvent.hpp"
+#include "app.hpp"
 
 namespace engine {
   WindowResizedEvent::WindowResizedEvent(int width, int height) 
@@ -10,6 +11,8 @@ namespace engine {
     std::stringstream ss;
     ss << "WindowResizedEvent: " << width << ", " << height << ".";
     std::cout << ss.str() << std::endl;
+    App& app = App::get();
+    app.event(*this);
   }
 
   WindowClosedEvent::WindowClosedEvent() {
