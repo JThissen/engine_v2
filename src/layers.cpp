@@ -2,6 +2,7 @@
 
 namespace engine {
   void Layers::pushLayer(std::unique_ptr<Layer>& layer) {
+    layer->push();
     layers.push_back(std::move(layer));
   }
 

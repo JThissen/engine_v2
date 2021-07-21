@@ -11,7 +11,7 @@ namespace engine {
     public:
     Key::KeyCode keyCode;
     bool isRepeated;
-    std::string key;
+    std::string keyName;
   
     KeyPressedEvent(int key, bool isRepeated = false);
     void publish();
@@ -21,9 +21,18 @@ namespace engine {
     public:
     Key::KeyCode keyCode;
     bool isRepeated;
-    std::string key;
+    std::string keyName;
   
     KeyReleasedEvent(int key);
+    void publish();
+  };
+
+  class KeyTypedEvent : public Event {
+    public:
+    Key::KeyCode keyCode;
+    std::string keyName;
+  
+    KeyTypedEvent(int key);
     void publish();
   };
 }

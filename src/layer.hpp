@@ -14,7 +14,7 @@ namespace engine {
     virtual void push() = 0;
     virtual void remove() = 0;
     virtual void update(DeltaTime deltaTime) = 0;
-    virtual void event(Event& event) = 0;
+    virtual void event(Event& event);
   };
 }
 

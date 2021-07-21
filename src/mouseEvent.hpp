@@ -4,11 +4,13 @@
 #include "headers.hpp"
 #include "event.hpp"
 #include "windows.h"
+#include "mouse.hpp"
 
 namespace engine {
   class MousePressedEvent : public Event {
     public:
-    int button;
+    Mouse::MouseCode mouseCode;
+    std::string buttonName;
   
     MousePressedEvent(int button);
     void publish();
@@ -16,7 +18,8 @@ namespace engine {
 
   class MouseReleasedEvent : public Event {
     public:
-    int button;
+    Mouse::MouseCode button;
+    std::string buttonName;
   
     MouseReleasedEvent(int button);
     void publish();

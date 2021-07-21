@@ -13,6 +13,7 @@ namespace engine {
       WindowMoved,
       KeyPressed,
       KeyReleased,
+      KeyTyped,
       MousePressed,
       MouseReleased,
       MousePosition,

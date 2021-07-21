@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include "windowInput.hpp"
+#include "imGuiLayer.hpp"
 
 namespace engine {
   App* App::instance = nullptr;
@@ -16,10 +17,17 @@ namespace engine {
     eventBus = std::make_shared<EventBus>();
     eventBus->start();
     window = std::make_unique<Window>("engine", 800, 600, eventBus);
+
+    if(useImGui) {
+      imGuiLayer = std::make_unique<ImGuiLayer>();
+      layers.pushLayer(imGuiLayer);
+    }
   }
 
   void App::run() {
     while(running) {
+      glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
       float time = static_cast<float>(glfwGetTime());
       DeltaTime deltaTime = DeltaTime(time - timePreviousFrame);
       timePreviousFrame = time;
@@ -48,10 +56,5 @@ namespace engine {
     for(const auto& layer : layers.layers) {
       layer->event(event);
     }
-  }
-
-  void App::pushLayer(std::unique_ptr<Layer>& layer) {
-    layer->push();
-    layers.pushLayer(layer);
   }
 }

@@ -81,6 +81,12 @@ namespace engine {
       }
     });
 
+    glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int key) {
+      Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
+      KeyTypedEvent event(key);
+      self->eventBus->post(std::bind(&KeyTypedEvent::publish, event));
+    });
+
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
       Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
       switch(action) {

@@ -11,10 +11,13 @@ namespace engine {
     private:
       bool running = true;
       float timePreviousFrame = 0.0f;
+      static App* instance;
     
     public:
+      bool useImGui = true;
       std::unique_ptr<Window> window;
       std::shared_ptr<EventBus> eventBus;
+      std::unique_ptr<Layer> imGuiLayer;
       Layers layers;
       
       static App& get();
@@ -24,10 +27,6 @@ namespace engine {
       void close();
       void resize(const WindowResizedEvent& event);
       void event(Event& event);
-      void pushLayer(std::unique_ptr<Layer>& layer);
-
-      private:
-      static App* instance;
   };
 }
 

@@ -3,26 +3,30 @@
 
 namespace engine {
   MousePressedEvent::MousePressedEvent(int button) 
-    : button(button) {
+    : mouseCode(static_cast<Mouse::MouseCode>(button)) {
       eventType = EventType::MousePressed;
+      auto it = Mouse::map.find(static_cast<Mouse::MouseCode>(button));
+      buttonName = (it != Mouse::map.end()) ? it->second : "Button undefined";
   }
 
   void MousePressedEvent::publish() {
     std::stringstream ss;
-    ss << "MousePressedEvent: " << button << ".";
+    ss << "MousePressedEvent: " << buttonName << ".";
     std::cout << ss.str() << std::endl;
     App& app = App::get();
     app.event(*this);
   }
 
   MouseReleasedEvent::MouseReleasedEvent(int button) 
-    : button(button) {
+    : button(static_cast<Mouse::MouseCode>(button)) {
       eventType = EventType::MouseReleased;
+      auto it = Mouse::map.find(static_cast<Mouse::MouseCode>(button));
+      buttonName = (it != Mouse::map.end()) ? it->second : "Button undefined";
   }
 
   void MouseReleasedEvent::publish() {
     std::stringstream ss;
-    ss << "MouseReleasedEvent: " << button << ".";
+    ss << "MouseReleasedEvent: " << buttonName << ".";
     std::cout << ss.str() << std::endl;
     App& app = App::get();
     app.event(*this);

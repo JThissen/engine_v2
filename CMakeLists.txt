@@ -22,6 +22,7 @@ set(CPP_FILES
   src/sandbox.cpp
   src/imGuiLayer.cpp
   src/imgui_impl_opengl3.cpp
+  src/imgui_impl_glfw.cpp
   src/windowInput.cpp
   src/mouse.cpp
 )
@@ -69,6 +70,7 @@ target_link_libraries(${PROJECT_NAME}
   glfw
   glm
   imgui
+  libimm32.a #https://github.com/AllenDang/giu/issues/151
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
