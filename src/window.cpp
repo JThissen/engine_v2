@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "opengl/openglContext.hpp"
 
 namespace engine {
   int Window::windowCount = 0;
@@ -29,15 +30,8 @@ namespace engine {
       return;
     }
 
-    glfwMakeContextCurrent(window);
-    int loadedGL = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
-
-    if(!loadedGL) {
-      std::cout << "Could not load OpenGL functions." << std::endl;
-      glfwTerminate();
-      return;
-    }
-
+    openglContext = std::make_unique<OpenglContext>(window);
+    openglContext->create();
     glfwSwapInterval(1);
     setCallbacks();
   }
@@ -50,7 +44,7 @@ namespace engine {
 
   void Window::update() {
     glfwPollEvents();
-    glfwSwapBuffers(window);
+    openglContext->swapBuffers();
   }
 
   void Window::setCallbacks() {

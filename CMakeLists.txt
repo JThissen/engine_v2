@@ -25,6 +25,10 @@ set(CPP_FILES
   src/imgui_impl_glfw.cpp
   src/windowInput.cpp
   src/mouse.cpp
+  src/renderer/context.cpp
+  src/renderer/shader.cpp
+  src/renderer/shaderBuilder.cpp
+  src/opengl/openglContext.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})

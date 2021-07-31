@@ -6,7 +6,7 @@
 
 class Sandbox : public engine::App {
   public:
-  Sandbox();
+  Sandbox(bool useImGui);
   ~Sandbox() = default;
 };
 
