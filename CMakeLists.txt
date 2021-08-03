@@ -28,7 +28,12 @@ set(CPP_FILES
   src/renderer/context.cpp
   src/renderer/shader.cpp
   src/renderer/shaderBuilder.cpp
+  src/renderer/layout.cpp
+  src/renderer/layoutBuffer.cpp
   src/opengl/openglContext.cpp
+  src/opengl/openglVertexBuffer.cpp
+  src/opengl/openglIndexBuffer.cpp
+  src/opengl/openglVertexArray.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})
