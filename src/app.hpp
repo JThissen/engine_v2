@@ -6,7 +6,9 @@
 #include "eventBus.hpp"
 #include "layers.hpp"
 #include "renderer/shaderBuilder.hpp"
+#include "renderer/orthographicCamera.hpp"
 #include "opengl/openglVertexArray.hpp"
+#include "opengl/openglRenderer.hpp"
 
 namespace engine {
   class App {
@@ -25,9 +27,11 @@ namespace engine {
       std::shared_ptr<EventBus> eventBus;
       std::unique_ptr<Layer> imGuiLayer;
       std::unique_ptr<Shader> shader;
-      // std::shared_ptr<OpenglVertexBuffer> openglVertexBuffer;
-      // std::shared_ptr<OpenglIndexBuffer> openglIndexBuffer;
-      std::unique_ptr<OpenglVertexArray> openglVertexArray;
+      std::unique_ptr<Shader> shader2;
+      std::shared_ptr<OpenglVertexArray> openglVertexArray;
+      std::unique_ptr<OpenglVertexArray> testVA;
+      std::unique_ptr<OpenglRenderer> openglRenderer;
+      std::unique_ptr<OrthographicCamera> orthographicCamera;
       Layers layers;
       
       App(bool useImGui);

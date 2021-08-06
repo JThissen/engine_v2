@@ -30,10 +30,13 @@ set(CPP_FILES
   src/renderer/shaderBuilder.cpp
   src/renderer/layout.cpp
   src/renderer/layoutBuffer.cpp
+  src/renderer/renderer.cpp
+  src/renderer/orthographicCamera.cpp
   src/opengl/openglContext.cpp
   src/opengl/openglVertexBuffer.cpp
   src/opengl/openglIndexBuffer.cpp
   src/opengl/openglVertexArray.cpp
+  src/opengl/openglRenderer.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})

@@ -1,13 +1,13 @@
 #include "openglIndexBuffer.hpp"
 
 namespace engine {
-  OpenglIndexBuffer::OpenglIndexBuffer(GLsizeiptr size) {
+  OpenglIndexBuffer::OpenglIndexBuffer(GLsizeiptr size) : size(size) {
     glCreateBuffers(1, &buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
   }
 
-  OpenglIndexBuffer::OpenglIndexBuffer(int* indices, GLsizeiptr size) {
+  OpenglIndexBuffer::OpenglIndexBuffer(int* indices, GLsizeiptr size) : size(size) {
     glCreateBuffers(1, &buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(float), indices, GL_STATIC_DRAW);

@@ -2,6 +2,7 @@
 #include "windowInput.hpp"
 #include "imGuiLayer.hpp"
 #include "renderer/layoutBuffer.hpp"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace engine {
   App* App::instance = nullptr;
@@ -50,6 +51,12 @@ namespace engine {
       .linkProgram();
     shader = std::move(shaderBuilder.shader);
     // glPolygonMode(GL_FRONT, GL_LINE);
+
+    openglRenderer = std::make_unique<OpenglRenderer>();
+
+    orthographicCamera = std::make_unique<OrthographicCamera>(-1.0f, 1.0f, -1.0f, 1.0f);
+    orthographicCamera->setPosition(glm::vec3(0.0f));
+    orthographicCamera->setRotation(0.0f);
   }
 
   void App::run() {
@@ -58,13 +65,15 @@ namespace engine {
       DeltaTime deltaTime = DeltaTime(time - timePreviousFrame);
       timePreviousFrame = time;
 
-      glClearColor(0.24f, 0.24f, 0.24f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glUniform1f(glGetUniformLocation(shader->program, "time"), time);
+      openglRenderer->setClearColor(0.24f, 0.24f, 0.24f, 1.0f);
+      openglRenderer->clear();
+      
       shader->useProgram();
+      glUniform1f(glGetUniformLocation(shader->program, "time"), time);
+      glUniform4fv(glGetUniformLocation(shader->program, "viewMatrix"), 1, glm::value_ptr(orthographicCamera->viewMatrix));
+      glUniform4fv(glGetUniformLocation(shader->program, "projectionMatrix"), 1, glm::value_ptr(orthographicCamera->projectionMatrix));
       openglVertexArray->bind();
-      glBindVertexArray(openglVertexArray->vertexArray);
-      glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+      openglRenderer->draw(openglVertexArray);
 
       for(const auto& layer : layers.layers) {
         layer->update(deltaTime);

@@ -8,6 +8,8 @@ namespace engine {
   class OpenglIndexBuffer {
     public:
     unsigned int buffer;
+    GLsizeiptr size;
+    
     OpenglIndexBuffer(GLsizeiptr size);
     OpenglIndexBuffer(int* indices, GLsizeiptr size);
     ~OpenglIndexBuffer();
