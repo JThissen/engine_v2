@@ -15,7 +15,9 @@ namespace engine {
     private:
       bool isRunning = true;
       bool useImGui = false;
+      float time = 0.0f;
       float timePreviousFrame = 0.0f;
+      DeltaTime deltaTime;
       static App* instance;
 
       unsigned int vertexArray;

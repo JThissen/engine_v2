@@ -2,11 +2,10 @@
 #define MAIN_H
 
 #include "headers.hpp"
-#include "sandbox.hpp"
+#include "sandbox/sandbox.hpp"
 
 int main(int argc, char* argv[]) {
-    std::unique_ptr<Sandbox> sandbox = std::make_unique<Sandbox>(true);
-    sandbox->run();
+    std::unique_ptr<engine::App> sandbox = std::make_unique<Sandbox>(true);
     return EXIT_SUCCESS;
 }
 

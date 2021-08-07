@@ -3,7 +3,8 @@
 
 #include "../headers.hpp"
 
-class Shader {
+namespace engine {
+	class Shader {
   public:
 		unsigned int program;
 		std::vector<unsigned int>	attachments;
@@ -16,6 +17,7 @@ class Shader {
 		void useProgram();
 		void disuseProgram();
 		std::string shaderTypeToString(ShaderType shader_type) const;
-};
+	};
+}
 
 #endif

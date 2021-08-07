@@ -13,5 +13,12 @@
 #include "window.hpp"
 #include "windowEvent.hpp"
 #include "imGuiLayer.hpp"
+#include "renderer/orthographicCamera.hpp"
+#include "renderer/shader.hpp"
+#include "renderer/shaderBuilder.hpp"
+#include "renderer/layoutBuffer.hpp"
+#include "renderer/layout.hpp"
+#include "opengl/openglVertexArray.hpp"
+#include "opengl/openglRenderer.hpp"
 
 #endif

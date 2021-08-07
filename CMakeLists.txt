@@ -18,8 +18,6 @@ set(CPP_FILES
   src/key.cpp
   src/layer.cpp
   src/layers.cpp
-  src/testLayer.cpp
-  src/sandbox.cpp
   src/imGuiLayer.cpp
   src/imgui_impl_opengl3.cpp
   src/imgui_impl_glfw.cpp
@@ -37,6 +35,8 @@ set(CPP_FILES
   src/opengl/openglIndexBuffer.cpp
   src/opengl/openglVertexArray.cpp
   src/opengl/openglRenderer.cpp
+  src/sandbox/sandboxLayer.cpp
+  src/sandbox/sandbox.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})

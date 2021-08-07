@@ -3,7 +3,8 @@
 
 #include "shader.hpp"
 
-class ShaderBuilder {
+namespace engine {
+	class ShaderBuilder {
   public:
   	std::unique_ptr<Shader> shader;
   	ShaderBuilder& createProgram();
@@ -13,6 +14,7 @@ class ShaderBuilder {
   	ShaderBuilder& attachGeometryShader(const std::string& shaderPath);
   	ShaderBuilder& attachFragmentShader(const std::string& shaderPath);
   	void linkProgram();
-};
+	};
+}
 
 #endif
