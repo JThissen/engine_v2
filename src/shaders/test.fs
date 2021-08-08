@@ -1,9 +1,13 @@
 #version 460 core
 
+in vec3 position;
+in vec2 textureCoords;
+
 out vec4 color;
-in vec3 out_position;
+
 uniform float time;
+uniform vec4 col;
 
 void main() {
-  color = vec4(sin(out_position + time) * 0.5 + 0.5, 1.0);
+  color = vec4(textureCoords.xy, 0.0, 1.0);
 }

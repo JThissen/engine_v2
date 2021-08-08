@@ -2,6 +2,7 @@
 #define SHADER_H
 
 #include "../headers.hpp"
+#include <glm/glm.hpp>
 
 namespace engine {
 	class Shader {
@@ -17,6 +18,7 @@ namespace engine {
 		void useProgram();
 		void disuseProgram();
 		std::string shaderTypeToString(ShaderType shader_type) const;
+		void setUniform4f(const glm::vec4& rgba, const std::string& name) const;
 	};
 }
 

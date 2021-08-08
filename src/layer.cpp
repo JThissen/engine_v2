@@ -6,4 +6,6 @@ namespace engine {
   void Layer::event(Event& event) {
     // maybe for later usage
   }
+
+  void Layer::createImGuiLayout() {}
 }

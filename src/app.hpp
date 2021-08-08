@@ -5,6 +5,7 @@
 #include "window.hpp"
 #include "eventBus.hpp"
 #include "layers.hpp"
+#include "imGuiLayer.hpp"
 #include "renderer/shaderBuilder.hpp"
 #include "renderer/orthographicCamera.hpp"
 #include "opengl/openglVertexArray.hpp"
@@ -27,7 +28,8 @@ namespace engine {
     public:
       std::unique_ptr<Window> window;
       std::shared_ptr<EventBus> eventBus;
-      std::unique_ptr<Layer> imGuiLayer;
+      std::shared_ptr<ImGuiLayer> imGuiLayer;
+      std::shared_ptr<Layer> testLayer;
       std::unique_ptr<Shader> shader;
       std::unique_ptr<Shader> shader2;
       std::shared_ptr<OpenglVertexArray> openglVertexArray;

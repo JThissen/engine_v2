@@ -11,6 +11,8 @@ namespace engine {
     virtual void push() override;
     virtual void remove() override;
     virtual void update(DeltaTime deltaTime) override;
+    void render();
+    void newFrame();
   };
 }
 

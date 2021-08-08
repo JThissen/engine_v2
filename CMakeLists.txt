@@ -35,6 +35,7 @@ set(CPP_FILES
   src/opengl/openglIndexBuffer.cpp
   src/opengl/openglVertexArray.cpp
   src/opengl/openglRenderer.cpp
+  src/opengl/openglTexture.cpp
   src/sandbox/sandboxLayer.cpp
   src/sandbox/sandbox.cpp
 )
@@ -63,11 +64,13 @@ add_subdirectory(external/glad)
 add_subdirectory(external/glfw) 
 add_subdirectory(external/glm)
 add_subdirectory(external/imgui)
+add_subdirectory(external/stb_image)
 
 target_include_directories(${PROJECT_NAME} 
   PUBLIC external/glfw/include
   PUBLIC external/glm/glm
   PUBLIC external/imgui
+  PUBLIC external/stb_image
 )
 
 # link_directories default path is ./build
@@ -75,6 +78,7 @@ target_link_directories(${PROJECT_NAME}
   PUBLIC external/glfw/src
   PUBLIC external/glm
   PUBLIC external/imgui
+  PUBLIC external/stb_image
 )
 
 target_link_libraries(${PROJECT_NAME} 
@@ -82,6 +86,7 @@ target_link_libraries(${PROJECT_NAME}
   glfw
   glm
   imgui
+  stb_image
   libimm32.a #https://github.com/AllenDang/giu/issues/151
 )
 

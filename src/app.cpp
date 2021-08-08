@@ -1,6 +1,5 @@
 #include "app.hpp"
 #include "windowInput.hpp"
-#include "imGuiLayer.hpp"
 #include "renderer/layoutBuffer.hpp"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -22,7 +21,7 @@ namespace engine {
     window = std::make_unique<Window>("engine", 800, 600, eventBus);
 
     if(useImGui) {
-      imGuiLayer = std::make_unique<ImGuiLayer>();
+      imGuiLayer = std::make_shared<ImGuiLayer>();
       layers.pushLayer(imGuiLayer);
     }
   }
@@ -40,6 +39,12 @@ namespace engine {
       for(const auto& layer : layers.overlays) {
         layer->update(deltaTime);
       }
+
+      imGuiLayer->newFrame();
+      for(const auto& layer : layers.layers) {
+        layer->createImGuiLayout();
+      }
+      imGuiLayer->render();
 
       window->update();
     }

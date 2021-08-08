@@ -15,6 +15,7 @@ namespace engine {
     virtual void remove() = 0;
     virtual void update(DeltaTime deltaTime) = 0;
     virtual void event(Event& event);
+    virtual void createImGuiLayout();
   };
 }
 

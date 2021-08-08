@@ -42,18 +42,17 @@ namespace engine {
     ImGui::DestroyContext();
   }
 
-  void ImGuiLayer::update(engine::DeltaTime deltaTime) {
+  void ImGuiLayer::newFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+  }
 
-    bool showDemoWindow = true;
-    ImGui::ShowDemoWindow(&showDemoWindow);
-    
+  void ImGuiLayer::render() {
     ImGuiIO& io = ImGui::GetIO();
     App& app = App::get();
     io.DisplaySize = ImVec2(app.window->width, app.window->height);
-
+    
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -63,5 +62,28 @@ namespace engine {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
+  }
+
+  void ImGuiLayer::update(engine::DeltaTime deltaTime) {
+    // ImGui_ImplOpenGL3_NewFrame();
+    // ImGui_ImplGlfw_NewFrame();
+    // ImGui::NewFrame();
+
+    // bool showDemoWindow = true;
+    // ImGui::ShowDemoWindow(&showDemoWindow);
+    
+    // ImGuiIO& io = ImGui::GetIO();
+    // App& app = App::get();
+    // io.DisplaySize = ImVec2(app.window->width, app.window->height);
+
+    // ImGui::Render();
+    // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    //   GLFWwindow* backup_current_context = glfwGetCurrentContext();
+    //   ImGui::UpdatePlatformWindows();
+    //   ImGui::RenderPlatformWindowsDefault();
+    //   glfwMakeContextCurrent(backup_current_context);
+    // }
   }
 }

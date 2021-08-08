@@ -65,7 +65,7 @@ namespace engine {
 	    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 	    std::vector<GLchar> infoLog(maxLength);
 	    glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
-	    std::cout << infoLog.data() << std::endl;
+	    std::cout << "Could not compile " << shaderTypeToString(shaderType) << " shader. Log: " << infoLog.data() << std::endl;
 	    glDeleteShader(shader);
 	    return;
 	  }
@@ -83,7 +83,7 @@ namespace engine {
 	  	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 	  	std::vector<GLchar> infoLog(maxLength);
 	  	glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-	    std::cout << infoLog.data() << std::endl;
+	    std::cout << "Could not link shader. Log:" << infoLog.data() << std::endl;
 	  	glDeleteProgram(program);
 	
 			for(int i = 0; i <= attachments.size(); i++) {
@@ -110,5 +110,9 @@ namespace engine {
 	    std::cerr << "Invalid shader type." << std::endl;
 	  }
 		return it->second;
+	}
+
+	void Shader::setUniform4f(const glm::vec4& rgba, const std::string& name) const {
+		glUniform4f(glGetUniformLocation(program, name.data()), rgba.x, rgba.y, rgba.z, rgba.z);
 	}
 }

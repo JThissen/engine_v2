@@ -15,8 +15,6 @@ namespace engine {
 
     glm::mat4 projectionMatrix = glm::mat4(1.0f);
     glm::mat4 viewMatrix = glm::mat4(1.0f);
-
-    private:
     glm::vec3 position = glm::vec3(0.0f);
     float rotationInDegrees = 0.0f;
   };

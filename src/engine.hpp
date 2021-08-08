@@ -12,6 +12,7 @@
 #include "platform.hpp"
 #include "window.hpp"
 #include "windowEvent.hpp"
+#include "windowInput.hpp"
 #include "imGuiLayer.hpp"
 #include "renderer/orthographicCamera.hpp"
 #include "renderer/shader.hpp"

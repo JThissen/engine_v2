@@ -1,14 +1,17 @@
 #version 460 core
 
-layout (location = 0) in vec3 in_position;
-out vec3 out_position;
+layout (location = 0) in vec3 layoutPosition;
+layout (location = 1) in vec2 layoutTextureCoords;
+out vec3 position;
+out vec2 textureCoords;
+
 uniform float time;
+uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
 void main() {
-  out_position = in_position;
-  float pos_x = sin(in_position.x + time);
-  float pos_y = sin(in_position.y + time);
-  gl_Position = projectionMatrix * viewMatrix * vec4(in_position.xyz, 1.0);
+  position = layoutPosition;
+  textureCoords = layoutTextureCoords;
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(layoutPosition.xyz, 1.0);
 }
