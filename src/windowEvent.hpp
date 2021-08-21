@@ -20,6 +20,15 @@ namespace engine {
     WindowClosedEvent();
     void publish();
   };
+
+  class FramebufferResizedEvent : public Event {
+    public:
+    int width;
+    int height;
+  
+    FramebufferResizedEvent(int width, int height);
+    void publish();
+  };
 }
 
 #endif

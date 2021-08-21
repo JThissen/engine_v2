@@ -41,6 +41,9 @@ namespace engine {
       App(bool useImGui);
       virtual ~App() = default;
       void run();
+      void updateTime();
+      void updateLayers();
+      void updateImGui();
       void close();
       void resize(const WindowResizedEvent& event);
       void event(Event& event);

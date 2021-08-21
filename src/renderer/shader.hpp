@@ -19,6 +19,7 @@ namespace engine {
 		void disuseProgram();
 		std::string shaderTypeToString(ShaderType shader_type) const;
 		void setUniform4f(const glm::vec4& rgba, const std::string& name) const;
+		void setUniform1i(int value, const std::string& name) const;
 	};
 }
 

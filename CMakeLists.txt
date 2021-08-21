@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.13.4)
 project(engine VERSION 0.1.0)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Debug)
+
 include(CTest)
 enable_testing()
 
@@ -30,6 +34,8 @@ set(CPP_FILES
   src/renderer/layoutBuffer.cpp
   src/renderer/renderer.cpp
   src/renderer/orthographicCamera.cpp
+  src/renderer/orthographicCameraController.cpp
+  src/renderer/perspectiveCamera.cpp
   src/opengl/openglContext.cpp
   src/opengl/openglVertexBuffer.cpp
   src/opengl/openglIndexBuffer.cpp

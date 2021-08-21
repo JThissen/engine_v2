@@ -14,12 +14,14 @@ namespace engine {
       std::string title;
       int width;
       int height;
+      bool isMinimized = false;
+      bool isCursorEnabled = false;
       static int windowCount;
       GLFWwindow* window;
       std::shared_ptr<EventBus> eventBus;
       std::unique_ptr<OpenglContext> openglContext;
 
-      Window(std::string title, int width, int height, std::shared_ptr<EventBus> eventBus);
+      Window(std::string title, std::shared_ptr<EventBus> eventBus, std::optional<int> width = std::nullopt, std::optional<int> height = std::nullopt);
       ~Window();
       void create();
       void destroy();

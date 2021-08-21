@@ -15,11 +15,14 @@
 #include "windowInput.hpp"
 #include "imGuiLayer.hpp"
 #include "renderer/orthographicCamera.hpp"
+#include "renderer/orthographicCameraController.hpp"
+#include "renderer/perspectiveCamera.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/shaderBuilder.hpp"
 #include "renderer/layoutBuffer.hpp"
 #include "renderer/layout.hpp"
 #include "opengl/openglVertexArray.hpp"
 #include "opengl/openglRenderer.hpp"
+#include "opengl/openglTexture.hpp"
 
 #endif

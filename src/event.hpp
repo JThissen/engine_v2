@@ -17,7 +17,8 @@ namespace engine {
       MousePressed,
       MouseReleased,
       MousePosition,
-      MouseScrolled
+      MouseScrolled,
+      FramebufferResized
     };
     static std::unordered_map<EventType, std::string> eventTypeMap;
     EventType eventType;

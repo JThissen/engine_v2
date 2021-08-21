@@ -13,8 +13,8 @@ namespace engine {
     virtual ~Layer() = default;
     virtual void push() = 0;
     virtual void remove() = 0;
-    virtual void update(DeltaTime deltaTime) = 0;
-    virtual void event(Event& event);
+    virtual void update(float time, DeltaTime deltaTime) = 0;
+    virtual void event(Event& event) = 0;
     virtual void createImGuiLayout();
   };
 }

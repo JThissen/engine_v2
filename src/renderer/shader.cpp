@@ -115,4 +115,8 @@ namespace engine {
 	void Shader::setUniform4f(const glm::vec4& rgba, const std::string& name) const {
 		glUniform4f(glGetUniformLocation(program, name.data()), rgba.x, rgba.y, rgba.z, rgba.z);
 	}
+
+	void Shader::setUniform1i(int value, const std::string& name) const {
+		glUniform1i(glGetUniformLocation(program, name.data()), value);
+	}
 }

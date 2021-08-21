@@ -1,11 +1,12 @@
 #include "window.hpp"
 #include "opengl/openglContext.hpp"
+#include "utils.hpp"
 
 namespace engine {
   int Window::windowCount = 0;
 
-  Window::Window(std::string title, int width, int height, std::shared_ptr<EventBus> eventBus)
-    : title(title), width(width), height(height), eventBus(eventBus) {
+  Window::Window(std::string title, std::shared_ptr<EventBus> eventBus, std::optional<int> width, std::optional<int> height)
+    : title(title), eventBus(eventBus), width(width.value_or(0)), height(height.value_or(0)) {
     create();
   }
 
@@ -22,6 +23,17 @@ namespace engine {
         return;
       }
     }
+
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+	  const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
+    if(!width || !height) {
+      width = videoMode->width;
+      height = videoMode->height;
+    }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     window = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
 
     if(!window) {
@@ -32,6 +44,7 @@ namespace engine {
 
     openglContext = std::make_unique<OpenglContext>(window);
     openglContext->create();
+    glfwSetInputMode(window, GLFW_CURSOR, isCursorEnabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
     glfwSwapInterval(1);
     setCallbacks();
   }
@@ -111,6 +124,7 @@ namespace engine {
 
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
       Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
+      // self->isMinimized = (width == 0 && height == 0) ? true : false;
       WindowResizedEvent event(width, height);
       self->eventBus->post(std::bind(&WindowResizedEvent::publish, event));
     });
@@ -119,6 +133,13 @@ namespace engine {
       Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
       WindowClosedEvent event = WindowClosedEvent();
       self->eventBus->post(std::bind(&WindowClosedEvent::publish, event));
+    });
+
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+      Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
+      FramebufferResizedEvent event = FramebufferResizedEvent(width, height);
+      self->eventBus->post(std::bind(&FramebufferResizedEvent::publish, event));
+      glViewport(0, 0, width, height);
     });
   }
 }

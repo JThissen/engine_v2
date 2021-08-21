@@ -22,4 +22,17 @@ namespace engine {
   void WindowClosedEvent::publish() {
     std::cout << "WindowClosedEvent." << std::endl;
   }
+
+  FramebufferResizedEvent::FramebufferResizedEvent(int width, int height) 
+    : width(width), height(height) {
+      eventType = EventType::FramebufferResized;
+  }
+
+  void FramebufferResizedEvent::publish() {
+    std::stringstream ss;
+    ss << "FramebufferResizedEvent: " << width << ", " << height << ".";
+    std::cout << ss.str() << std::endl;
+    App& app = App::get();
+    app.event(*this);
+  }
 }

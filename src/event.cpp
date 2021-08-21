@@ -10,7 +10,8 @@ namespace engine {
     { Event::EventType::MousePressed , "MousePressed" },
     { Event::EventType::MouseReleased, "MouseReleased" },
     { Event::EventType::MousePosition, "MousePosition" },
-    { Event::EventType::MouseScrolled, "MouseScrolled" }
+    { Event::EventType::MouseScrolled, "MouseScrolled" },
+    { Event::EventType::FramebufferResized, "FramebufferResized" }
   };
 
   Event::Event() {

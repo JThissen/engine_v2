@@ -10,7 +10,8 @@ namespace engine {
     virtual ~ImGuiLayer() = default;
     virtual void push() override;
     virtual void remove() override;
-    virtual void update(DeltaTime deltaTime) override;
+    virtual void update(float time, DeltaTime deltaTime) override;
+    virtual void event(Event& event) override;
     void render();
     void newFrame();
   };

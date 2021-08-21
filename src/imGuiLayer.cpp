@@ -64,7 +64,7 @@ namespace engine {
     }
   }
 
-  void ImGuiLayer::update(engine::DeltaTime deltaTime) {
+  void ImGuiLayer::update(float time, engine::DeltaTime deltaTime) {
     // ImGui_ImplOpenGL3_NewFrame();
     // ImGui_ImplGlfw_NewFrame();
     // ImGui::NewFrame();
@@ -85,5 +85,9 @@ namespace engine {
     //   ImGui::RenderPlatformWindowsDefault();
     //   glfwMakeContextCurrent(backup_current_context);
     // }
+  }
+
+  void ImGuiLayer::event(Event& event) {
+    
   }
 }

@@ -3,6 +3,7 @@
 #include "renderer/layoutBuffer.hpp"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include "utils.hpp"
 
 namespace engine {
   App* App::instance = nullptr;
@@ -18,7 +19,7 @@ namespace engine {
     instance = this;
     eventBus = std::make_shared<EventBus>();
     eventBus->start();
-    window = std::make_unique<Window>("engine", 800, 600, eventBus);
+    window = std::make_unique<Window>("engine", eventBus, 800, 600);
 
     if(useImGui) {
       imGuiLayer = std::make_shared<ImGuiLayer>();
@@ -28,37 +29,53 @@ namespace engine {
 
   void App::run() {
     while(isRunning) {
-      time = static_cast<float>(glfwGetTime());
-      deltaTime = DeltaTime(time - timePreviousFrame);
-      timePreviousFrame = time;
+      updateTime();
+      updateLayers();
+      updateImGui();
+      window->update();
+    }
+  }
 
-      for(const auto& layer : layers.layers) {
-        layer->update(deltaTime);
-      }
+  void App::updateTime() {
+    time = static_cast<float>(glfwGetTime());
+    deltaTime = DeltaTime(time - timePreviousFrame);
+    timePreviousFrame = time;
+  }
 
-      for(const auto& layer : layers.overlays) {
-        layer->update(deltaTime);
-      }
+  void App::updateLayers() {
+    for(const auto& layer : layers.layers) {
+        layer->update(time, deltaTime);
+    }
 
-      imGuiLayer->newFrame();
+    for(const auto& layer : layers.overlays) {
+      layer->update(time, deltaTime);
+    }
+  }
+
+  void App::updateImGui() {
+    imGuiLayer->newFrame();
       for(const auto& layer : layers.layers) {
         layer->createImGuiLayout();
       }
       imGuiLayer->render();
-
-      window->update();
-    }
   }
 
   void App::close() {
     isRunning = false;
   }
 
-  void App::resize(const WindowResizedEvent& event) {
-    // t.b.d.
-  }
-
   void App::event(Event& event) {
+    if(event.eventType == Event::EventType::KeyPressed) {
+      try {
+        auto keyPressedEvent = dynamic_cast<KeyPressedEvent&>(event);
+        if(keyPressedEvent.keyName == Key::map[Key::KeyCode::Escape]) {
+          isRunning = false;
+        }
+      } catch(const std::bad_cast& error) {
+        Utils::print(error.what());
+      }
+    }
+
     for(const auto& layer : layers.layers) {
       layer->event(event);
     }

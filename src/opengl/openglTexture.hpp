@@ -13,7 +13,7 @@ namespace engine {
     GLuint textureId;
     OpenglTexture(const std::string& path);
     ~OpenglTexture();
-    void bind(int unit);
+    void bind(int unit = 0);
   };
 }
 
