@@ -1,5 +1,6 @@
 #include "perspectiveCamera.hpp"
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "../utils.hpp"
 
 namespace engine {
@@ -11,14 +12,14 @@ namespace engine {
 
   void PerspectiveCamera::handleKeyPress(DeltaTime deltaTime) {
     if(WindowInput::isKeyPressed(Key::KeyCode::A)) {
-      position -= glm::normalize(glm::cross(z, y)) * speed * deltaTime.seconds();
-    } else if(WindowInput::isKeyPressed(Key::KeyCode::D)) {
       position += glm::normalize(glm::cross(z, y)) * speed * deltaTime.seconds();
+    } else if(WindowInput::isKeyPressed(Key::KeyCode::D)) {
+      position -= glm::normalize(glm::cross(z, y)) * speed * deltaTime.seconds();
     }
     if(WindowInput::isKeyPressed(Key::KeyCode::S)) {
-      position -= z * speed * deltaTime.seconds();
-    } else if(WindowInput::isKeyPressed(Key::KeyCode::W)) {
       position += z * speed * deltaTime.seconds();
+    } else if(WindowInput::isKeyPressed(Key::KeyCode::W)) {
+      position -= z * speed * deltaTime.seconds();
     }
   }
 
@@ -37,12 +38,14 @@ namespace engine {
     dy *= sensitivity;
     yaw += dx;
     pitch += dy;
-    pitch = (pitch > 89.0f) ? 89.0f : (pitch < -89.0f) ? -89.0f : pitch;
-    z = {
-      cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
-      sin(glm::radians(pitch)),
-      sin(glm::radians(yaw)) * cos(glm::radians(pitch))
-    };
-    view = glm::lookAt(position, position + glm::normalize(z), y);
+
+    glm::quat qPitch = glm::angleAxis(glm::radians(-pitch), glm::vec3(1, 0, 0));
+    glm::quat qYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0, 1, 0));
+    glm::quat qPitchYaw = glm::normalize(qPitch * qYaw);
+    glm::mat4 rotate = glm::toMat4(qPitchYaw);
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), position);
+    view = rotate * translate;
+    x = glm::rotate(glm::inverse(qPitchYaw), glm::vec3(1.0, 0.0, 0.0));
+    z = glm::rotate(glm::inverse(qPitchYaw), glm::vec3(0.0, 0.0, -1.0));
   }
 }
