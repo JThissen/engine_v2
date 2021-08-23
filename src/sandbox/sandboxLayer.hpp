@@ -24,17 +24,15 @@ class SandboxLayer : public engine::Layer {
 
   std::shared_ptr<engine::OpenglVertexArray> openglVertexArray2;
   std::shared_ptr<engine::Shader> shader2;
+  std::shared_ptr<engine::Shader> shader3;
   glm::vec3 position2 = glm::vec3(0.0f);
   float speed2 = 1.0f;
-
   float orthographicCameraTranslationSpeed = 1.0f;
   float orthographicCameraRotationSpeed = 200.0f;
-
   glm::vec3 color = { 0.0f, 1.0f, 0.0f };
-
   std::pair<float ,float> mousePosition = { 400.0f, 300.0f };
-
   bool hasMouseEnterWindow = false;
+  std::unique_ptr<engine::FrameBuffer> frameBuffer;
 };
 
 #endif

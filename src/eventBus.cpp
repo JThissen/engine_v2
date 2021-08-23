@@ -27,7 +27,7 @@ namespace engine {
 
   void EventBus::entry() {
     while(running) {
-      if(queue.size() > 0) {
+      if(!queue.empty()) {
         std::function<void()> func = queue.front();
         if(func != nullptr) {
           std::lock_guard<std::mutex> lock(mutex);

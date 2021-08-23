@@ -42,6 +42,7 @@ set(CPP_FILES
   src/opengl/openglVertexArray.cpp
   src/opengl/openglRenderer.cpp
   src/opengl/openglTexture.cpp
+  src/opengl/openglFrameBuffer.cpp
   src/sandbox/sandboxLayer.cpp
   src/sandbox/sandbox.cpp
 )

@@ -44,15 +44,21 @@
     perspectiveCamera = std::make_unique<engine::PerspectiveCamera>(800.0f, 600.0f);
     openglVertexArray2 = std::make_unique<engine::OpenglVertexArray>();
 
-    std::array<float, 20> vertices2 = {
-      -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-      0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-      0.5f, 0.5f, 0.0f, 1.0f, 1.0f
+    // std::array<float, 20> vertices2 = {
+    //   -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+    //   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+    //   0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+    //   0.5f, 0.5f, 0.0f, 1.0f, 1.0f
+    // };
+    std::array<float, 20> ndc = {
+      -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+      1.0f, 1.0f, 0.0f, 1.0f, 1.0f
     };
     auto openglVertexBuffer2 = std::make_shared<engine::OpenglVertexBuffer>(
-      vertices2.data(),
-      vertices2.size(),
+      ndc.data(),
+      ndc.size(),
       engine::LayoutBuffer({
         { engine::GLSLType::VEC3, "layoutPosition" },
         { engine::GLSLType::VEC2, "layoutTextureCoords" }
@@ -74,6 +80,16 @@
     texture = std::make_unique<engine::OpenglTexture>("./../src/sandbox/assets/checkerboard.png");
     shader2->setUniform1i(0, "testTexture"); //we can bind unit 1, 2, 3 etc
     texture2 = std::make_unique<engine::OpenglTexture>("./../src/sandbox/assets/wood.jpg");
+
+
+    engine::ShaderBuilder shaderBuilder3;
+    shaderBuilder3.createProgram()
+      .attachVertexShader("./../src/shaders/basic.vs")
+      .attachFragmentShader("./../src/shaders/basic.fs")
+      .linkProgram();
+    shader3 = std::move(shaderBuilder3.shader);
+
+    frameBuffer = std::make_unique<engine::FrameBuffer>(800, 600, 1, true);
   }
 
   void SandboxLayer::push() {
@@ -85,21 +101,10 @@
   }
 
   void SandboxLayer::update(float time, engine::DeltaTime deltaTime) {
+    frameBuffer->bind();
     openglRenderer->setClearColor(0.24f, 0.24f, 0.24f, 1.0f);
     openglRenderer->clear();
     // openglRenderer->setViewport(0, 0, 1920, 1068);
-
-    // if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::A)) {
-    //   orthographicCamera->position.x += orthographicCameraTranslationSpeed * deltaTime.seconds();
-    // } else if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::D)) {
-    //   orthographicCamera->position.x -= orthographicCameraTranslationSpeed * deltaTime.seconds();
-    // }
-    // if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::W)) {
-    //   orthographicCamera->position.y -= orthographicCameraTranslationSpeed * deltaTime.seconds();
-    // } else if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::S)) {
-    //   orthographicCamera->position.y += orthographicCameraTranslationSpeed * deltaTime.seconds();
-    // }
-    // orthographicCameraController->update(deltaTime);
     perspectiveCamera->updateView(deltaTime, mousePosition, hasMouseEnterWindow);
 
     // openglRenderer->draw(
@@ -109,17 +114,6 @@
     //   orthographicCamera->projectionMatrix,
     //   openglVertexArray
     // );
-
-    // if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::J)) {
-    //   position2.x -= speed2 * deltaTime.seconds();
-    // } else if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::L)) {
-    //   position2.x += speed2 * deltaTime.seconds();
-    // }
-    // if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::K)) {
-    //   position2.y -= speed2 * deltaTime.seconds();
-    // } else if(engine::WindowInput::isKeyPressed(engine::Key::KeyCode::I)) {
-    //   position2.y += speed2 * deltaTime.seconds();
-    // }
 
     // for(int i = 0; i < 5; i++) {
     //   for(int j = 0; j < 5; j++) {
@@ -138,33 +132,34 @@
     //   }
     // }
 
-
-    
-    // std::cout << glm::to_string(orthographicCamera->position) << std::endl;
-    // engine::Utils::print(glm::to_string(orthographicCameraController->orthographicCamera->position));
-
-    // std::cout << engine::Utils::average(1, 2, 3) << std::endl;
-
     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position2) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-    shader2->setUniform4f(glm::vec4(color, 1.0f), "col"); 
+    shader2->setUniform4f(glm::vec4(color, 1.0f), "col");
     texture->bind(0);
     openglRenderer->draw(
       shader2,
       modelMatrix,
       perspectiveCamera->view,
       perspectiveCamera->projection,
-      // orthographicCameraController->orthographicCamera->viewMatrix,
-      // orthographicCameraController->orthographicCamera->projectionMatrix,
       openglVertexArray2
     );
     texture2->bind(0);
     openglRenderer->draw(
       shader2,
       glm::translate(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, -1.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(1.0f)),
-      // orthographicCameraController->orthographicCamera->viewMatrix,
-      // orthographicCameraController->orthographicCamera->projectionMatrix,
       perspectiveCamera->view,
       perspectiveCamera->projection,
+      openglVertexArray2
+    );
+    frameBuffer->unbind();
+
+    openglRenderer->setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    openglRenderer->clear();
+    frameBuffer->bindTexture(frameBuffer->colorAttachmentIds[0]);
+    openglRenderer->draw(
+      shader3,
+      glm::mat4(),
+      glm::mat4(),
+      glm::mat4(),
       openglVertexArray2
     );
   }
@@ -178,14 +173,14 @@
   void SandboxLayer::event(engine::Event& event) {
     if(event.eventType == engine::Event::EventType::MouseScrolled) {
       try {
-        orthographicCameraController->mouseScroll(dynamic_cast<engine::MouseScrolledEvent&>(event));
+        // orthographicCameraController->mouseScroll(dynamic_cast<engine::MouseScrolledEvent&>(event));
       } catch(const std::bad_cast& error) {
         std::cout << error.what() << std::endl;
       }
     } else if(event.eventType == engine::Event::EventType::WindowResized) {
       auto windowResizedEvent = dynamic_cast<engine::WindowResizedEvent&>(event);
       engine::Utils::print(windowResizedEvent.width, windowResizedEvent.height);
-      orthographicCameraController->resize(windowResizedEvent);
+      // orthographicCameraController->resize(windowResizedEvent);
       // openglRenderer->setViewport(0, 0, windowResizedEvent.width, windowResizedEvent.height);
     } else if(event.eventType == engine::Event::EventType::FramebufferResized) {
       // engine::Utils::print("test", event.getSize().first, event.getSize().second);
