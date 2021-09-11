@@ -3,12 +3,14 @@
 
 #include "../headers.hpp"
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 
 namespace engine {
 	class Shader {
   public:
 		unsigned int program;
 		std::vector<unsigned int>	attachments;
+		std::string shaderName;
 		enum class ShaderType { VERTEX, TESS_CONTROL, TESS_EVAL, GEOMETRY, FRAGMENT };
 		Shader();
   	~Shader();
@@ -18,9 +20,17 @@ namespace engine {
 		void useProgram();
 		void disuseProgram();
 		std::string shaderTypeToString(ShaderType shader_type) const;
-		void setUniform4f(const glm::vec4& rgba, const std::string& name) const;
+		void setUniform4fv(const glm::vec4& rgba, const std::string& name) const;
+		void setUniform3fv(const glm::vec3& rgb, const std::string& name) const;
 		void setUniform1i(int value, const std::string& name) const;
 		void setUniform1f(float value, const std::string& name) const;
+
+		//shader storage buffer object
+		// std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> ssboMap = {};
+		std::pair<unsigned int, unsigned int> ssboCubes;
+		void createSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage = GL_DYNAMIC_DRAW);
+		void updateSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage = GL_DYNAMIC_DRAW);
+		void setSSBOBlockSubData(unsigned int bufferId, unsigned int offset, void* data, unsigned int size);
 	};
 }
 

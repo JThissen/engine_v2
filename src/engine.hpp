@@ -25,5 +25,7 @@
 #include "opengl/openglRenderer.hpp"
 #include "opengl/openglTexture.hpp"
 #include "opengl/openglFrameBuffer.hpp"
+#include "scene/scene.hpp"
+#include "scene/component.hpp"
 
 #endif

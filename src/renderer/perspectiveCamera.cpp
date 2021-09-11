@@ -6,6 +6,7 @@
 namespace engine {
   PerspectiveCamera::PerspectiveCamera(float windowWidth, float windowHeight, float speed, float fov, float sensitivity) {
     aspectRatio = windowWidth / windowHeight;
+    // previousMousePosition = { windowWidth / 2.0f, windowHeight / 2.0f };
     view = glm::lookAt(position, position + z, y);
     projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 1000.0f);
   }
@@ -23,17 +24,17 @@ namespace engine {
     }
   }
 
-  void PerspectiveCamera::updateView(DeltaTime deltaTime, std::pair<float, float> mousePosition, bool hasMouseEnterWindow) {
+  void PerspectiveCamera::updateView(DeltaTime deltaTime, const glm::vec2& mousePosition, bool hasMouseEnterWindow) {
     handleKeyPress(deltaTime);
     if(hasMouseEnterWindow && first) {
-      previousMousePosition.first = mousePosition.first;
-      previousMousePosition.second = mousePosition.second; 
+      previousMousePosition.x = mousePosition.x;
+      previousMousePosition.y = mousePosition.y; 
       first = false;
     }
-    float dx = mousePosition.first - previousMousePosition.first;
-    float dy = previousMousePosition.second - mousePosition.second;
-    previousMousePosition.first = mousePosition.first;
-    previousMousePosition.second = mousePosition.second;
+    float dx = locked ? 0.0f : mousePosition.x - previousMousePosition.x;
+    float dy = locked ? 0.0f : previousMousePosition.y - mousePosition.y;
+    previousMousePosition.x = mousePosition.x;
+    previousMousePosition.y = mousePosition.y;
     dx *= sensitivity;
     dy *= sensitivity;
     yaw += dx;

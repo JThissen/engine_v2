@@ -45,6 +45,8 @@ set(CPP_FILES
   src/opengl/openglFrameBuffer.cpp
   src/sandbox/sandboxLayer.cpp
   src/sandbox/sandbox.cpp
+  src/scene/component.cpp
+  src/scene/scene.cpp
 )
 
 add_executable(${PROJECT_NAME} ${CPP_FILES})
@@ -78,6 +80,7 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC external/glm/glm
   PUBLIC external/imgui
   PUBLIC external/stb_image
+  PUBLIC external/entt
 )
 
 # link_directories default path is ./build

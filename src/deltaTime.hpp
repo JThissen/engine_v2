@@ -9,6 +9,7 @@ namespace engine {
     DeltaTime(float time = 0.0f);
     float seconds();
     float milliseconds();
+    operator float() { return time; }
   };
 }
 

@@ -14,28 +14,17 @@
 namespace engine {
   class App {
     private:
-      bool isRunning = true;
       bool useImGui = false;
       float time = 0.0f;
       float timePreviousFrame = 0.0f;
       DeltaTime deltaTime;
       static App* instance;
 
-      unsigned int vertexArray;
-      unsigned int vertexBuffer;
-      unsigned int indexBuffer;
-
     public:
+      bool isRunning = true;
       std::unique_ptr<Window> window;
       std::shared_ptr<EventBus> eventBus;
       std::shared_ptr<ImGuiLayer> imGuiLayer;
-      std::shared_ptr<Layer> testLayer;
-      std::unique_ptr<Shader> shader;
-      std::unique_ptr<Shader> shader2;
-      std::shared_ptr<OpenglVertexArray> openglVertexArray;
-      std::unique_ptr<OpenglVertexArray> testVA;
-      std::unique_ptr<OpenglRenderer> openglRenderer;
-      std::unique_ptr<OrthographicCamera> orthographicCamera;
       Layers layers;
       
       App(bool useImGui);

@@ -19,7 +19,7 @@ namespace engine {
     instance = this;
     eventBus = std::make_shared<EventBus>();
     eventBus->start();
-    window = std::make_unique<Window>("engine", eventBus, 800, 600);
+    window = std::make_unique<Window>("engine", eventBus, 1600, 900);
 
     if(useImGui) {
       imGuiLayer = std::make_shared<ImGuiLayer>();

@@ -44,6 +44,7 @@ namespace engine {
 
     openglContext = std::make_unique<OpenglContext>(window);
     openglContext->create();
+    glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, isCursorEnabled ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
     glfwSwapInterval(1);
     setCallbacks();

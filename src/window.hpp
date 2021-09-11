@@ -15,7 +15,7 @@ namespace engine {
       int width;
       int height;
       bool isMinimized = false;
-      bool isCursorEnabled = false;
+      bool isCursorEnabled = true;
       static int windowCount;
       GLFWwindow* window;
       std::shared_ptr<EventBus> eventBus;

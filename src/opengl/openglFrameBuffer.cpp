@@ -6,6 +6,18 @@ namespace engine {
     create(width, height, colorAttachments, depthAttachment);
   }
 
+  FrameBuffer::FrameBuffer(const FrameBufferSpecification& spec)
+   : spec(spec) {
+    for(auto textureFormat : spec.textureFormats) {
+      if(isDepthFormat(textureFormat)) {
+        depthTextureFormat = textureFormat;
+      } else {
+        colorTextureFormats.push_back(textureFormat);
+      }
+    }
+    create(spec.width, spec.height, colorTextureFormats.size(), true);
+  }
+
   FrameBuffer::~FrameBuffer() {
     glDeleteFramebuffers(1, &bufferId);
     glDeleteTextures(colorAttachmentIds.size(), colorAttachmentIds.data());
@@ -20,7 +32,18 @@ namespace engine {
     
     for(int i = 0; i < this->colorAttachmentIds.size(); i++) {
       glBindTexture(GL_TEXTURE_2D, this->colorAttachmentIds[i]);
-      attachColorTexture(this->colorAttachmentIds[i], width, height, GL_RGB8, GL_RGB, i);
+
+      int internalFormat = GL_RGBA8;
+      int format = GL_RGBA;
+
+      if(colorTextureFormats[i] == FrameBufferTextureFormat::RGBA8) {
+        internalFormat = GL_RGBA8;
+        format = GL_RGBA;
+      } else if(colorTextureFormats[i] == FrameBufferTextureFormat::RED_INTEGER) {
+        internalFormat = GL_R32I;
+        format = GL_RED_INTEGER;
+      }
+      attachColorTexture(this->colorAttachmentIds[i], width, height, internalFormat, format, i);
     }
 
     if(depthAttachment) {
@@ -28,6 +51,14 @@ namespace engine {
       glBindTexture(GL_TEXTURE_2D, depthAttachmentId);
       attachDepthTexture(depthAttachmentId, width, height, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL);
     }
+
+    if (colorAttachmentIds.size() > 1) {
+			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+			glDrawBuffers(static_cast<int>(colorAttachmentIds.size()), buffers);
+		}
+		else if(colorAttachmentIds.empty()) {
+			glDrawBuffer(GL_NONE); //depth pass only
+		}
 
     Utils::print("Framebuffer status", glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -69,6 +100,7 @@ namespace engine {
 
   void FrameBuffer::bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, bufferId);
+    glViewport(0, 0, width, height);
   }
 
   void FrameBuffer::bindTexture(unsigned int textureId) {
@@ -83,5 +115,16 @@ namespace engine {
     this->width = width;
     this->height = height;
     recreate(width, height);
+  }
+
+  bool FrameBuffer::isDepthFormat(FrameBufferTextureFormat textureFormat) {
+    return textureFormat == FrameBufferTextureFormat::DEPTH24STENCIL8;
+  }
+
+  int FrameBuffer::readPixel(int colorAttachmentIndex, int x, int y, int format) {
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + colorAttachmentIndex);
+    int pixelData;
+    glReadPixels(x, y, 1, 1, format, GL_INT, &pixelData);
+    return pixelData;
   }
 }

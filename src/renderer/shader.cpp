@@ -1,5 +1,6 @@
 #include "shader.hpp"
-#include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
+#include "../utils.hpp"
 
 namespace engine {
 		Shader::Shader() {
@@ -19,26 +20,19 @@ namespace engine {
 	}
 	
 	std::string Shader::readShader(const std::string& path) {
-		std::fstream fstream;
-		std::vector<char> buffer;
-		fstream.open(path, std::ios::in);
-	
-		try {
-			if (fstream.is_open()) {
-				fstream.seekg(0, std::ios::end);
-				buffer.resize(fstream.tellg());
-				fstream.seekg(0, std::ios::beg);
-				fstream.read(buffer.data(), buffer.size());
-				fstream.close();
-			}
-			else {
-				std::cout << "Could not read shader. Log: " << path.data() << std::endl;
-			}
+		std::ifstream file(path);
+    if (!file) {
+			Utils::print("Could not read shader at path", path);
+			return std::string();
 		}
-		catch (const std::ios_base::failure & e) {
-			std::cerr << "Unable to read shader.\n Error: " << e.what() << "\nCode: " << e.code() << std::endl;
-		}
-		return std::string(buffer.begin(), buffer.end());
+    file.ignore(std::numeric_limits<std::streamsize>::max());
+    auto size = file.gcount();
+    file.clear();
+    file.seekg(0, std::ios_base::beg);
+    std::stringstream sstr;
+    sstr << file.rdbuf();
+    file.close();
+    return sstr.str();
 	}
 	
 	void Shader::attachShader(const std::string& shaderPath, ShaderType shaderType) {
@@ -55,7 +49,7 @@ namespace engine {
 		}
 	
 		const GLchar *source = (const GLchar *)shaderSource.c_str();
-	  glShaderSource(shader, 1, &source, 0);
+	  glShaderSource(shader, 1, &source, nullptr);
 	  glCompileShader(shader);
 	  GLint isCompiled = 0;
 	  glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
@@ -112,8 +106,12 @@ namespace engine {
 		return it->second;
 	}
 
-	void Shader::setUniform4f(const glm::vec4& rgba, const std::string& name) const {
-		glUniform4f(glGetUniformLocation(program, name.data()), rgba.x, rgba.y, rgba.z, rgba.z);
+	void Shader::setUniform4fv(const glm::vec4& rgba, const std::string& name) const {
+		glUniform4fv(glGetUniformLocation(program, name.data()), 1, glm::value_ptr(rgba));
+	}
+
+	void Shader::setUniform3fv(const glm::vec3& rgb, const std::string& name) const {
+		glUniform3fv(glGetUniformLocation(program, name.data()), 1, glm::value_ptr(rgb));
 	}
 
 	void Shader::setUniform1i(int value, const std::string& name) const {
@@ -122,5 +120,34 @@ namespace engine {
 
 	void Shader::setUniform1f(float value, const std::string& name) const {
 		glUniform1f(glGetUniformLocation(program, name.data()), value);
+	}
+
+	void Shader::createSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage) {
+		Utils::print("creating ssboblock with key", key);
+		unsigned int bufferId;
+		glGenBuffers(1, &bufferId);
+		ssboCubes = std::make_pair(bufferId, size);
+		updateSSBOBlock(key, size, data, usage);
+		Utils::print("glbindbufferbase key", key);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, key, bufferId);
+		Utils::print("created bufferid is", bufferId);
+		ssboCubes = std::make_pair(bufferId, size);
+		Utils::print("created ssboCubes first is", ssboCubes.first);
+	}
+
+	void Shader::updateSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage) {
+		Utils::print("update ssbo block with key", key);
+		Utils::print("size", size);
+		Utils::print("ssbocubes", ssboCubes.first);
+		unsigned int bufferId = ssboCubes.first;
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferId);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, usage);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	}
+	void Shader::setSSBOBlockSubData(unsigned int key, unsigned int offset, void* data, unsigned int size) {
+		unsigned int bufferId = ssboCubes.first;
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferId);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	}
 }

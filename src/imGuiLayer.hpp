@@ -14,6 +14,7 @@ namespace engine {
     virtual void event(Event& event) override;
     void render();
     void newFrame();
+    void setImGuiTheme();
   };
 }
 

@@ -5,34 +5,30 @@
 
 class SandboxLayer : public engine::Layer {
   public:
-  SandboxLayer();
+  SandboxLayer(int windowWidth, int windowHeight);
   virtual ~SandboxLayer() = default;
   virtual void push() override;
   virtual void remove() override;
   virtual void update(float time, engine::DeltaTime deltaTime) override;
   virtual void event(engine::Event& event) override;
   virtual void createImGuiLayout() override;
+  void setViewportMousePosition();
+  void setObjectSelectedId();
 
   private:
-  std::shared_ptr<engine::OpenglVertexArray> openglVertexArray;
-  std::shared_ptr<engine::Shader> shader;
-  std::shared_ptr<engine::OpenglRenderer> openglRenderer;
-  // std::unique_ptr<engine::OrthographicCamera> orthographicCamera;
-  std::unique_ptr<engine::OrthographicCameraController> orthographicCameraController;
-  std::unique_ptr<engine::PerspectiveCamera> perspectiveCamera;
-  std::unique_ptr<engine::OpenglTexture> texture, texture2;
-
-  std::shared_ptr<engine::OpenglVertexArray> openglVertexArray2;
-  std::shared_ptr<engine::Shader> shader2;
-  std::shared_ptr<engine::Shader> shader3;
-  glm::vec3 position2 = glm::vec3(0.0f);
-  float speed2 = 1.0f;
-  float orthographicCameraTranslationSpeed = 1.0f;
-  float orthographicCameraRotationSpeed = 200.0f;
-  glm::vec3 color = { 0.0f, 1.0f, 0.0f };
-  std::pair<float ,float> mousePosition = { 400.0f, 300.0f };
-  bool hasMouseEnterWindow = false;
   std::unique_ptr<engine::FrameBuffer> frameBuffer;
+  std::shared_ptr<engine::OpenglRenderer> openglRenderer;
+  std::shared_ptr<engine::PerspectiveCamera> editorCamera;
+  std::shared_ptr<engine::OpenglTexture> texture;
+  std::unique_ptr<engine::Scene> scene;
+  glm::vec2 viewportDimensions;
+  glm::vec2 viewportBounds[2];
+  glm::vec2 mousePosition;
+  glm::vec2 viewportMousePosition = { 0.0, 0.0 };
+  glm::vec2 viewportSize = { 0.0, 0.0 };
+  bool hasMouseEnterWindow = false;
+  bool autoScroll = true;
+  int objectSelectedId = -1;
 };
 
 #endif

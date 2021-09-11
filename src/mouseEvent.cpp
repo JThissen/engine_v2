@@ -52,7 +52,7 @@ namespace engine {
 
   void MousePositionEvent::publish() {
     std::stringstream ss;
-    ss << "MousePositionEvent: " << x << ", " << y << ".";
+    // ss << "MousePositionEvent: " << x << ", " << y << ".";
     std::cout << ss.str() << std::endl;
     App& app = App::get();
     app.event(*this);
