@@ -27,6 +27,7 @@ set(CPP_FILES
   src/imgui_impl_glfw.cpp
   src/windowInput.cpp
   src/mouse.cpp
+  src/uuid.cpp
   src/renderer/context.cpp
   src/renderer/shader.cpp
   src/renderer/shaderBuilder.cpp
@@ -36,6 +37,7 @@ set(CPP_FILES
   src/renderer/orthographicCamera.cpp
   src/renderer/orthographicCameraController.cpp
   src/renderer/perspectiveCamera.cpp
+  src/renderer/geometry.cpp
   src/opengl/openglContext.cpp
   src/opengl/openglVertexBuffer.cpp
   src/opengl/openglIndexBuffer.cpp

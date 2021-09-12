@@ -122,32 +122,21 @@ namespace engine {
 		glUniform1f(glGetUniformLocation(program, name.data()), value);
 	}
 
-	void Shader::createSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage) {
-		Utils::print("creating ssboblock with key", key);
-		unsigned int bufferId;
-		glGenBuffers(1, &bufferId);
-		ssboCubes = std::make_pair(bufferId, size);
-		updateSSBOBlock(key, size, data, usage);
-		Utils::print("glbindbufferbase key", key);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, key, bufferId);
-		Utils::print("created bufferid is", bufferId);
-		ssboCubes = std::make_pair(bufferId, size);
-		Utils::print("created ssboCubes first is", ssboCubes.first);
+	void Shader::createSSBOBlock(unsigned int& SSBOBufferId, unsigned int bindingIndex, unsigned int size, void* data, unsigned int usage) {
+		glGenBuffers(1, &SSBOBufferId);
+		updateSSBOBlock(SSBOBufferId, size, data, usage);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, SSBOBufferId);
 	}
 
-	void Shader::updateSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage) {
-		Utils::print("update ssbo block with key", key);
-		Utils::print("size", size);
-		Utils::print("ssbocubes", ssboCubes.first);
-		unsigned int bufferId = ssboCubes.first;
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferId);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, usage);
+	void Shader::updateSSBOBlock(unsigned int& SSBOBufferId, unsigned int size, void* data, unsigned int usage) {
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBOBufferId);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, usage); //creates and initializes buffer
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	}
-	void Shader::setSSBOBlockSubData(unsigned int key, unsigned int offset, void* data, unsigned int size) {
-		unsigned int bufferId = ssboCubes.first;
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferId);
-		glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
+
+	void Shader::setSSBOBlockSubData(unsigned int& SSBOBufferId, unsigned int offset, void* data, unsigned int size) {
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBOBufferId);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data); //updates buffer
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	}
 }

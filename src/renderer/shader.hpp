@@ -24,13 +24,9 @@ namespace engine {
 		void setUniform3fv(const glm::vec3& rgb, const std::string& name) const;
 		void setUniform1i(int value, const std::string& name) const;
 		void setUniform1f(float value, const std::string& name) const;
-
-		//shader storage buffer object
-		// std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> ssboMap = {};
-		std::pair<unsigned int, unsigned int> ssboCubes;
-		void createSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage = GL_DYNAMIC_DRAW);
-		void updateSSBOBlock(unsigned int key, unsigned int size, void* data, unsigned int usage = GL_DYNAMIC_DRAW);
-		void setSSBOBlockSubData(unsigned int bufferId, unsigned int offset, void* data, unsigned int size);
+		static void createSSBOBlock(unsigned int& SSBOBufferId, unsigned int bindingIndex, unsigned int size, void* data, unsigned int usage = GL_DYNAMIC_DRAW);
+		static void updateSSBOBlock(unsigned int& SSBOBufferId, unsigned int size, void* data, unsigned int usage = GL_DYNAMIC_DRAW);
+		static void setSSBOBlockSubData(unsigned int& SSBOBufferId, unsigned int offset, void* data, unsigned int size);
 	};
 }
 

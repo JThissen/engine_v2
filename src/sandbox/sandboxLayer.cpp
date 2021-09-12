@@ -22,7 +22,7 @@
     editorCamera = std::make_shared<engine::PerspectiveCamera>(viewportDimensions.x, viewportDimensions.y);
     openglRenderer->viewMatrix = editorCamera->view;
     openglRenderer->projectionMatrix = editorCamera->projection;
-    openglRenderer->createCube("Cube");
+    openglRenderer->createCube();
     
     //TODO: texture loader class
     texture = std::make_shared<engine::OpenglTexture>("./../src/sandbox/assets/wood.jpg");
@@ -42,7 +42,7 @@
     editorCamera->updateView(deltaTime, mousePosition, hasMouseEnterWindow);
     openglRenderer->viewMatrix = editorCamera->view;
     openglRenderer->drawAxes(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.001f, 0.0f)));
-    openglRenderer->drawCubes(editorCamera->position, objectSelectedId);
+    openglRenderer->drawObjects(editorCamera->position, objectSelectedId);
     openglRenderer->drawGrid(glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f, 0.0f, -50.0f)));
     setViewportMousePosition();
     setObjectSelectedId();
@@ -68,11 +68,7 @@
       && viewportMousePosition.x <= viewportSize.x 
       && viewportMousePosition.y <= viewportSize.y) {
       int pixelData = frameBuffer->readPixel(1, viewportMousePosition.x, viewportMousePosition.y);
-      if(pixelData < openglRenderer->cubes.size()) {
-        objectSelectedId = pixelData;
-      } else {
-        objectSelectedId = -1;
-      }
+      objectSelectedId = pixelData;
     }
   }
 
@@ -150,17 +146,15 @@
       }
       if(ImGui::BeginPopup("CreatePopup")) {
         if(ImGui::Selectable("Cube")) {
-          engine::Utils::print("Create cube");
-          openglRenderer->createCube("Cube");
+          openglRenderer->createCube();
         }
         ImGui::EndPopup();
       }
-      if(!openglRenderer->cubes.empty()) {
-        for (int i = 0; i < openglRenderer->cubes.size(); i++) {
-          if (ImGui::TreeNode((void*)(intptr_t)i, openglRenderer->cubes[i]->name.c_str())) {
+      if(!openglRenderer->objects.empty()) {
+        for (int i = 0; i < openglRenderer->objects.size(); i++) {
+          if (ImGui::TreeNode((void*)(intptr_t)i, openglRenderer->objects[i]->name.c_str())) {
             if(ImGui::IsItemClicked()) {
-              objectSelectedId = openglRenderer->cubes[i]->id;
-              engine::Utils::print(objectSelectedId);
+              objectSelectedId = openglRenderer->objects[i]->id;
             }
             ImGui::TreePop();
           }
@@ -191,23 +185,27 @@
     ImGui::End();
 
     ImGui::Begin("Inspector");
-    if(objectSelectedId != -1) {
+    auto object = std::find_if(openglRenderer->objects.begin(), openglRenderer->objects.end(), [id=objectSelectedId](std::unique_ptr<engine::Object>& object) {
+      return object->id == id;
+    });
+
+    if(object != openglRenderer->objects.end()) {
       if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::PushID(objectSelectedId);
-        glm::mat4& modelMatrix = openglRenderer->cubes[objectSelectedId]->transformData.modelMatrix;
+        glm::mat4& modelMatrix = (*object)->transformData.modelMatrix;
 
         glm::vec3 positionFromMatrix = { modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2] };
         ImGui::SliderFloat3("Translate", glm::value_ptr(positionFromMatrix), -20.0f, 20.0f);
         glm::mat4 translate = glm::translate(glm::mat4(1.0f), positionFromMatrix);
 
-        glm::vec3& rotationRef = openglRenderer->cubes[objectSelectedId]->transformData.rotation;
+        glm::vec3& rotationRef = (*object)->transformData.rotation;
         ImGui::SliderFloat3("Rotate", glm::value_ptr(rotationRef), 0.0f, 360.0f);
         glm::quat rotateX = glm::angleAxis(glm::radians(rotationRef.x), glm::vec3(1.0f, 0.0f, 0.0f));
         glm::quat rotateY = glm::angleAxis(glm::radians(rotationRef.y), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::quat rotateZ = glm::angleAxis(glm::radians(rotationRef.z), glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 rotate = glm::toMat4(glm::normalize(rotateX * rotateY * rotateZ));
 
-        glm::vec3& scaleRef = openglRenderer->cubes[objectSelectedId]->transformData.scale;
+        glm::vec3& scaleRef = (*object)->transformData.scale;
         ImGui::SliderFloat3("Scale", glm::value_ptr(scaleRef), -20.0f, 20.0f);
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), scaleRef);
         modelMatrix = translate * rotate * scale;
@@ -215,11 +213,7 @@
       }
       
       ImGui::Separator();
-      if (ImGui::CollapsingHeader("Shader", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if(openglRenderer->cubes[objectSelectedId]->internalName == "CubeLight") {
-          
-        }
-      }
+      if (ImGui::CollapsingHeader("Shader", ImGuiTreeNodeFlags_DefaultOpen)) {}
 
       ImGui::Separator();
       if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {}

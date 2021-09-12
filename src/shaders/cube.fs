@@ -1,6 +1,6 @@
 #version 460 core
 
-struct Light {
+struct LightData {
   vec4 position;
   vec4 color;
   float intensity;
@@ -16,7 +16,7 @@ struct Material {
 };
 
 layout (std430, binding = 1) readonly buffer LightsData {
-	Light lights[];
+	LightData lights[];
 };
 
 layout (location = 0) out vec4 fragment;
@@ -34,21 +34,22 @@ uniform int id;
 
 void main() {
   //https://en.wikipedia.org/wiki/Phong_reflection_model
-
   fragment = vec4(0.0, 0.0, 0.0, 1.0);
 
   for(int i = 0; i < lights.length(); i++) {
-    Light light1 = lights[i];
+    LightData light = lights[i];
     vec3 ambient = ambientLightColor * ambientLightIntensity * material.ambientFactor;
-    vec3 lightColorIntensity = light1.color.rgb * light1.intensity; 
-    vec3 l = normalize(light1.position.xyz - position);
+    float dist = distance(light.position, vec4(position,1.0));
+    if (light.radius < dist) continue;
+		float distanceIntensity = 1 - dist / light.radius;
+    vec3 lightColorIntensity = light.color.rgb * light.intensity; 
+    vec3 l = normalize(light.position.xyz - position);
     vec3 n = normalize(normal);
     vec3 diffuse = material.diffuseFactor * max(dot(n, l), 0.0) * lightColorIntensity;
     vec3 v = normalize(eye - position);
     vec3 specular = material.specularFactor * pow(max(dot(reflect(-l, n), v), 0.0), material.shininessFactor) * lightColorIntensity;
     vec3 phong = ambient + diffuse + specular;
-    fragment.rgb += phong;
+    fragment.rgb += phong * distanceIntensity;
   }
-
   fragmentId = id;
 }
