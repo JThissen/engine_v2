@@ -131,7 +131,7 @@ namespace engine {
     void setAxesData();
     void setGridData(float x = 10.0f, float z = 10.0f);
     void drawAxes(const glm::mat4& modelMatrix);
-    void drawObjects(const glm::vec3& eyePosition, int objectSelectedId);
+    void drawObjects(const glm::vec3& eyePosition, int objectSelectedId, float nearPlane, float farPlane);
     void drawGrid(const glm::mat4& modelMatrix);
     void createCube(const glm::mat4& modelMatrix = glm::mat4(1.0f));
     void createPlane(const glm::mat4& modelMatrix = glm::mat4(1.0f));

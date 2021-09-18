@@ -21,6 +21,7 @@ layout (std430, binding = 1) readonly buffer LightsData {
 
 layout (location = 0) out vec4 fragment;
 layout (location = 1) out int fragmentId;
+layout (location = 2) out vec4 depth;
 
 in vec4 color;
 in vec3 normal;
@@ -30,7 +31,14 @@ uniform Material material;
 uniform vec3 ambientLightColor;
 uniform float ambientLightIntensity;
 uniform vec3 eye;
+uniform float nearPlane;
+uniform float farPlane;
 uniform int id;
+
+float linearize_depth(float d,float zNear,float zFar) {
+    float z_n = 2.0 * d - 1.0;
+    return 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+}
 
 void main() {
   //https://en.wikipedia.org/wiki/Phong_reflection_model
@@ -52,4 +60,5 @@ void main() {
     fragment.rgb += phong * distanceIntensity;
   }
   fragmentId = id;
+  depth = vec4(vec3(linearize_depth(gl_FragCoord.z, nearPlane, farPlane) / farPlane), 1.0);
 }

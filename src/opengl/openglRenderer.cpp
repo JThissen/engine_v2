@@ -318,7 +318,7 @@ namespace engine {
       objects.push_back(std::move(plane));
     }
 
-    void OpenglRenderer::drawObjects(const glm::vec3& eyePosition, int objectSelectedId) {
+    void OpenglRenderer::drawObjects(const glm::vec3& eyePosition, int objectSelectedId, float nearPlane, float farPlane) {
       for(int i = 0; i < objects.size(); i++) {
         if(objectSelectedId == objects[i]->id) {
           //outline pass
@@ -348,6 +348,8 @@ namespace engine {
     	    glUniformMatrix4fv(glGetUniformLocation(light->shaders["basic"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
     	    glUniformMatrix4fv(glGetUniformLocation(light->shaders["basic"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
           light->shaders["basic"]->setUniform4fv(lightDataContainer[light->lightDataContainerIndex].color, "color");
+          light->shaders["basic"]->setUniform1f(nearPlane, "nearPlane");
+          light->shaders["basic"]->setUniform1f(farPlane, "farPlane");
           glBindVertexArray(light->meshData.vaoId);
           glDrawArrays(GL_TRIANGLES, 0, 36);
           glBindVertexArray(0);
@@ -372,6 +374,9 @@ namespace engine {
           cube->shaders["cube"]->setUniform1f(cube->material.diffuseFactor, "material.diffuseFactor");
           cube->shaders["cube"]->setUniform1f(cube->material.specularFactor, "material.specularFactor");
           cube->shaders["cube"]->setUniform1f(cube->material.shininessFactor, "material.shininessFactor");
+          cube->shaders["cube"]->setUniform1f(nearPlane, "nearPlane");
+          cube->shaders["cube"]->setUniform1f(farPlane, "farPlane");
+          cube->shaders["cube"]->setUniform1f(cube->material.shininessFactor, "far");
           cube->shaders["cube"]->setUniform3fv(eyePosition, "eye");
           glBindVertexArray(cube->meshData.vaoId);
           glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -390,6 +395,8 @@ namespace engine {
           plane->shaders["cube"]->setUniform1f(plane->material.diffuseFactor, "material.diffuseFactor");
           plane->shaders["cube"]->setUniform1f(plane->material.specularFactor, "material.specularFactor");
           plane->shaders["cube"]->setUniform1f(plane->material.shininessFactor, "material.shininessFactor");
+          plane->shaders["cube"]->setUniform1f(nearPlane, "nearPlane");
+          plane->shaders["cube"]->setUniform1f(farPlane, "farPlane");
           plane->shaders["cube"]->setUniform3fv(eyePosition, "eye");
           glBindVertexArray(plane->meshData.vaoId);
           glDrawArrays(GL_TRIANGLES, 0, 6);

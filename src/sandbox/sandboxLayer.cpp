@@ -16,7 +16,11 @@
     engine::FrameBufferSpecification spec;
     spec.width = viewportDimensions.x;
     spec.height = viewportDimensions.y;
-    spec.textureFormats = { engine::FrameBufferTextureFormat::RGBA8, engine::FrameBufferTextureFormat::RGBA8 };
+    spec.textureFormats = { 
+      engine::FrameBufferTextureFormat::RGBA8, 
+      engine::FrameBufferTextureFormat::RGBA8,
+      engine::FrameBufferTextureFormat::RGBA8 
+    };
     frameBuffer = std::make_unique<engine::FrameBuffer>(spec);
     openglRenderer = std::make_shared<engine::OpenglRenderer>();
     editorCamera = std::make_shared<engine::PerspectiveCamera>(viewportDimensions.x, viewportDimensions.y);
@@ -44,7 +48,7 @@
     openglRenderer->viewMatrix = editorCamera->view;
     openglRenderer->projectionMatrix = editorCamera->projection;
     openglRenderer->drawAxes(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.001f, 0.0f)));
-    openglRenderer->drawObjects(editorCamera->position, objectSelectedId);
+    openglRenderer->drawObjects(editorCamera->position, objectSelectedId, editorCamera->nearPlane, editorCamera->farPlane);
     openglRenderer->drawGrid(glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f, 0.0f, -50.0f)));
     setViewportMousePosition();
     setObjectSelectedId();
@@ -76,8 +80,8 @@
 
   //  TODO: clean this up
   void SandboxLayer::createImGuiLayout() {
-    static bool b = true;
-    ImGui::ShowDemoWindow(&b);
+    // static bool b = true;
+    // ImGui::ShowDemoWindow(&b);
     static bool open = true;
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
@@ -237,14 +241,16 @@
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
     ImGui::Begin("Viewport");
     ImVec2 offset = ImGui::GetCursorPos();
-    unsigned int texture = openglRenderer->showDepthBuffer ? frameBuffer->depthAttachmentId : frameBuffer->colorAttachmentIds[0];
+    unsigned int texture = frameBuffer->colorAttachmentIds[0];
+    unsigned int texture2 = frameBuffer->colorAttachmentIds[2];
     ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
     glm::vec2 newViewportDimensions = { contentRegionAvailable.x, contentRegionAvailable.y };
     if(viewportDimensions != newViewportDimensions) {
       frameBuffer->onResize(static_cast<int>(newViewportDimensions.x), static_cast<int>(newViewportDimensions.y));
       viewportDimensions = newViewportDimensions;
     }
-    ImGui::Image(reinterpret_cast<void*>(texture), { viewportDimensions.x, viewportDimensions.y }, { 0, 1 }, { 1, 0 });
+    ImGui::Image(reinterpret_cast<void*>(texture), { viewportDimensions.x, viewportDimensions.y - 115.0f }, { 0, 1 }, { 1, 0 });
+    ImGui::Image(reinterpret_cast<void*>(texture2), { 192.0f, 108.0f }, { 0, 1 }, { 1, 0 });
 
     ImVec2 windowSize = ImGui::GetWindowSize();
     ImVec2 windowPosition = ImGui::GetWindowPos();

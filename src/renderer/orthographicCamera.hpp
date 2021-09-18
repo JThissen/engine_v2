@@ -19,7 +19,7 @@ namespace engine {
     float fov = 45.0f;
     float sensitivity = 0.2f;
     float nearPlane = 0.1f;
-    float farPlane = 1000.0f;
+    float farPlane = 100.0f;
     bool locked = false;
     // glm::vec3 position = { -50.0f, -40.0f, -70.0f };
     glm::vec3 position = { -5.0f, -4.0f, -7.0f };
@@ -29,7 +29,7 @@ namespace engine {
     glm::mat4 view;
     glm::mat4 projection;
 
-    OrthographicCamera(float windowWidth = 800.0f, float windowHeight = 600.0f, float translateSpeed = 5.0f, float zoomSpeed = 5.0f, float nearPlane = 0.1f, float farPlane = 1000.0f);
+    OrthographicCamera(float windowWidth = 800.0f, float windowHeight = 600.0f, float translateSpeed = 5.0f, float zoomSpeed = 5.0f, float nearPlane = 0.1f, float farPlane = 100.0f);
     void handleKeyPress(DeltaTime deltaTime);
     void updateView(DeltaTime deltaTime, const glm::vec2& mousePosition, bool hasMouseEnterWindow);
     void scroll(const MouseScrolledEvent& mouseScrolledEvent);
