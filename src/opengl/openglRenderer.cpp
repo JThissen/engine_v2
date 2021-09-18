@@ -31,8 +31,6 @@ namespace engine {
 
       createLight(lightData, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 7.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f)));
       createLight(lightData2, glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f)));
-
-      cubes = std::vector<std::unique_ptr<Cube>>();
     }
 
     void OpenglRenderer::setViewport(int x, int y, int width, int height) {
@@ -245,6 +243,21 @@ namespace engine {
         glBufferData(GL_ARRAY_BUFFER, Geometry::cubeColor.size() * sizeof(unsigned char), static_cast<void*>(Geometry::cubeColor.data()), GL_STATIC_DRAW);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, nullptr);
+        glBindVertexArray(0);
+      } else if(meshType == MeshType::PLANE) {
+        meshData.bufferIds = std::vector<unsigned int>(1, 0);
+        glGenBuffers(1, meshData.bufferIds.data());
+        glBindBuffer(GL_ARRAY_BUFFER, meshData.bufferIds[0]);
+        glBufferData(GL_ARRAY_BUFFER, Geometry::planeGeometry.size() * sizeof(float), static_cast<void*>(Geometry::planeGeometry.data()), GL_STATIC_DRAW);
+        glGenVertexArrays(1, &(meshData.vaoId));
+        glBindVertexArray(meshData.vaoId);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, nullptr);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 3));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 7));
+        glBindVertexArray(0);
       }
       return meshData;
     }
@@ -257,6 +270,7 @@ namespace engine {
       cube->shaders.insert({"outline", setShader("outline")});
       cube->shaders.insert({"cube", setShader("cube")});
       cube->shaders.insert({"basic", setShader("basic")});
+      cube->shaders.insert({"depth", setShader("depth")});
       cube->material.ambientFactor    = 0.25f;
       cube->material.diffuseFactor    = 0.15f;
       cube->material.specularFactor   = 0.3f;
@@ -272,8 +286,36 @@ namespace engine {
       cube->shaders["cube"]->disuseProgram();
       cube->transformData.modelMatrix = modelMatrix;
       cube->transformData.rotation = { 0.0f, 0.0f, 0.0f };
-      cube->transformData.scale = glm::vec3(1.0f);
+      cube->transformData.scale = { modelMatrix[0][0], modelMatrix[1][1], modelMatrix[2][2] };
       objects.push_back(std::move(cube));
+    }
+
+    void OpenglRenderer::createPlane(const glm::mat4& modelMatrix) {
+      std::unique_ptr<Plane> plane = std::make_unique<Plane>();
+      plane->id = UUID::createInt();
+      plane->name = "Plane-" + std::to_string(plane->id);
+      plane->meshData = createMesh(MeshType::PLANE);
+      plane->shaders.insert({"outline", setShader("outline")});
+      plane->shaders.insert({"cube", setShader("cube")});
+      plane->shaders.insert({"basic", setShader("basic")});
+      plane->shaders.insert({"depth", setShader("depth")});
+      plane->material.ambientFactor    = 0.25f;
+      plane->material.diffuseFactor    = 0.15f;
+      plane->material.specularFactor   = 0.3f;
+      plane->material.shininessFactor  = 4.0f;
+      plane->shaders["cube"]->useProgram();
+      plane->shaders["cube"]->setUniform3fv({ 1.0f, 1.0f, 1.0f }, "ambientLightColor");
+      plane->shaders["cube"]->setUniform1f(0.5f, "ambientLightIntensity");
+      plane->shaders["cube"]->setUniform1f(plane->material.ambientFactor, "material.ambientFactor");
+      plane->shaders["cube"]->setUniform1f(plane->material.diffuseFactor, "material.diffuseFactor");
+      plane->shaders["cube"]->setUniform1f(plane->material.specularFactor, "material.specularFactor");
+      plane->shaders["cube"]->setUniform1f(plane->material.shininessFactor, "material.shininessFactor");
+      plane->shaders["cube"]->setUniform1i(plane->id, "id");
+      plane->shaders["cube"]->disuseProgram();
+      plane->transformData.modelMatrix = modelMatrix;
+      plane->transformData.rotation = { 0.0f, 0.0f, 0.0f };
+      plane->transformData.scale = { modelMatrix[0][0], modelMatrix[1][1], modelMatrix[2][2] };
+      objects.push_back(std::move(plane));
     }
 
     void OpenglRenderer::drawObjects(const glm::vec3& eyePosition, int objectSelectedId) {
@@ -335,6 +377,24 @@ namespace engine {
           glDrawArrays(GL_TRIANGLES, 0, 36);
           glBindVertexArray(0);
           cube->shaders["cube"]->disuseProgram();
+        } else if(objects[i]->getObjectType() == ObjectType::PLANE) {
+          Plane* plane = dynamic_cast<Plane*>(objects[i].get());
+          // normal pass
+          glCullFace(GL_BACK);
+          plane->shaders["cube"]->useProgram();
+          glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(plane->transformData.modelMatrix));
+    	    glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	    glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+          plane->shaders["cube"]->setUniform1i(plane->id, "id");
+          plane->shaders["cube"]->setUniform1f(plane->material.ambientFactor, "material.ambientFactor");
+          plane->shaders["cube"]->setUniform1f(plane->material.diffuseFactor, "material.diffuseFactor");
+          plane->shaders["cube"]->setUniform1f(plane->material.specularFactor, "material.specularFactor");
+          plane->shaders["cube"]->setUniform1f(plane->material.shininessFactor, "material.shininessFactor");
+          plane->shaders["cube"]->setUniform3fv(eyePosition, "eye");
+          glBindVertexArray(plane->meshData.vaoId);
+          glDrawArrays(GL_TRIANGLES, 0, 6);
+          glBindVertexArray(0);
+          plane->shaders["cube"]->disuseProgram();
         }
       }
     }

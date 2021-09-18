@@ -4,18 +4,17 @@
 #include "../utils.hpp"
 
 namespace engine {
-  PerspectiveCamera::PerspectiveCamera(float windowWidth, float windowHeight, float speed, float fov, float sensitivity) {
-    aspectRatio = windowWidth / windowHeight;
-    // previousMousePosition = { windowWidth / 2.0f, windowHeight / 2.0f };
+  PerspectiveCamera::PerspectiveCamera(float windowWidth, float windowHeight, float speed, float fov, float sensitivity, float zoomSpeed, float nearPlane, float farPlane)
+    : aspectRatio(windowWidth/ windowHeight), speed(speed), fov(fov), sensitivity(sensitivity), zoomSpeed(zoomSpeed), nearPlane(nearPlane), farPlane(farPlane) {
     view = glm::lookAt(position, position + z, y);
-    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 1000.0f);
+    projection = glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
   }
 
   void PerspectiveCamera::handleKeyPress(DeltaTime deltaTime) {
     if(WindowInput::isKeyPressed(Key::KeyCode::A)) {
-      position += glm::normalize(glm::cross(z, y)) * speed * deltaTime.seconds();
+      position -= glm::normalize(glm::cross(y, z)) * speed * deltaTime.seconds();
     } else if(WindowInput::isKeyPressed(Key::KeyCode::D)) {
-      position -= glm::normalize(glm::cross(z, y)) * speed * deltaTime.seconds();
+      position += glm::normalize(glm::cross(y, z)) * speed * deltaTime.seconds();
     }
     if(WindowInput::isKeyPressed(Key::KeyCode::S)) {
       position += z * speed * deltaTime.seconds();
@@ -48,5 +47,21 @@ namespace engine {
     view = rotate * translate;
     x = glm::rotate(glm::inverse(qPitchYaw), glm::vec3(1.0, 0.0, 0.0));
     z = glm::rotate(glm::inverse(qPitchYaw), glm::vec3(0.0, 0.0, -1.0));
+  }
+
+  void PerspectiveCamera::scroll(const MouseScrolledEvent& mouseScrolledEvent) {
+    fov += -mouseScrolledEvent.yOffset * zoomSpeed;
+    fov = std::max(10.0f, fov);
+    fov = std::min(fov, 90.0f);
+    projection = glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+  }
+
+  void PerspectiveCamera::resize(const WindowResizedEvent& windowResizedEvent) {
+    aspectRatio = static_cast<float>(windowResizedEvent.width / windowResizedEvent.height);
+    projection = glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+  }
+
+  void PerspectiveCamera::updateProjection() {
+    projection = glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
   }
 }

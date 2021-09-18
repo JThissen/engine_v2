@@ -16,13 +16,14 @@
     engine::FrameBufferSpecification spec;
     spec.width = viewportDimensions.x;
     spec.height = viewportDimensions.y;
-    spec.textureFormats = { engine::FrameBufferTextureFormat::RGBA8, engine::FrameBufferTextureFormat::RED_INTEGER };
+    spec.textureFormats = { engine::FrameBufferTextureFormat::RGBA8, engine::FrameBufferTextureFormat::RGBA8 };
     frameBuffer = std::make_unique<engine::FrameBuffer>(spec);
     openglRenderer = std::make_shared<engine::OpenglRenderer>();
     editorCamera = std::make_shared<engine::PerspectiveCamera>(viewportDimensions.x, viewportDimensions.y);
     openglRenderer->viewMatrix = editorCamera->view;
     openglRenderer->projectionMatrix = editorCamera->projection;
     openglRenderer->createCube();
+    openglRenderer->createPlane(glm::scale(glm::mat4(1.0f), glm::vec3(15.0f, 1.0f, 15.0f)));
     
     //TODO: texture loader class
     texture = std::make_shared<engine::OpenglTexture>("./../src/sandbox/assets/wood.jpg");
@@ -41,6 +42,7 @@
     openglRenderer->clear();
     editorCamera->updateView(deltaTime, mousePosition, hasMouseEnterWindow);
     openglRenderer->viewMatrix = editorCamera->view;
+    openglRenderer->projectionMatrix = editorCamera->projection;
     openglRenderer->drawAxes(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.001f, 0.0f)));
     openglRenderer->drawObjects(editorCamera->position, objectSelectedId);
     openglRenderer->drawGrid(glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f, 0.0f, -50.0f)));
@@ -74,8 +76,8 @@
 
   //  TODO: clean this up
   void SandboxLayer::createImGuiLayout() {
-    // static bool b = true;
-    // ImGui::ShowDemoWindow(&b);
+    static bool b = true;
+    ImGui::ShowDemoWindow(&b);
     static bool open = true;
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
@@ -136,6 +138,13 @@
       ImGui::SliderFloat2("Pitch, Yaw", pitchYaw.data(), -360.0f, 360.0f);
       editorCamera->pitch = pitchYaw[0];
       editorCamera->yaw = pitchYaw[1];
+      ImGui::SliderFloat("Field of view", &editorCamera->fov, 10.0f, 90.0f);
+      ImGui::SliderFloat("Near plane", &editorCamera->nearPlane, 0.1f, 1000.0f);
+      ImGui::SliderFloat("Far plane", &editorCamera->farPlane, 0.1f, 1000.0f);
+      editorCamera->updateProjection();
+      ImGui::Checkbox("Depth buffer", &openglRenderer->showDepthBuffer);
+      std::string fov = "Field of view " + std::to_string(static_cast<int>(editorCamera->fov));
+      ImGui::Text(fov.data());
       ImGui::Separator();
       ImGui::PopID();
     }
@@ -150,13 +159,14 @@
         }
         ImGui::EndPopup();
       }
+
       if(!openglRenderer->objects.empty()) {
+        ImGuiTreeNodeFlags node_flags;
+        node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         for (int i = 0; i < openglRenderer->objects.size(); i++) {
-          if (ImGui::TreeNode((void*)(intptr_t)i, openglRenderer->objects[i]->name.c_str())) {
-            if(ImGui::IsItemClicked()) {
-              objectSelectedId = openglRenderer->objects[i]->id;
-            }
-            ImGui::TreePop();
+          ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, openglRenderer->objects[i]->name.c_str(), i);
+          if(ImGui::IsItemClicked()) {
+            objectSelectedId = openglRenderer->objects[i]->id;
           }
         } 
       }
@@ -227,7 +237,7 @@
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
     ImGui::Begin("Viewport");
     ImVec2 offset = ImGui::GetCursorPos();
-    unsigned int texture = frameBuffer->colorAttachmentIds[0];
+    unsigned int texture = openglRenderer->showDepthBuffer ? frameBuffer->depthAttachmentId : frameBuffer->colorAttachmentIds[0];
     ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
     glm::vec2 newViewportDimensions = { contentRegionAvailable.x, contentRegionAvailable.y };
     if(viewportDimensions != newViewportDimensions) {
@@ -251,9 +261,12 @@
 
   void SandboxLayer::event(engine::Event& event) {
     if(event.eventType == engine::Event::EventType::MouseScrolled) {
+      auto mouseScrolledEvent = dynamic_cast<engine::MouseScrolledEvent&>(event);
+      editorCamera->scroll(mouseScrolledEvent);
       //TODO
     } else if(event.eventType == engine::Event::EventType::WindowResized) {
       auto windowResizedEvent = dynamic_cast<engine::WindowResizedEvent&>(event);
+      editorCamera->resize(windowResizedEvent);
       // TODO
     } else if(event.eventType == engine::Event::EventType::FramebufferResized) {
       // TODO

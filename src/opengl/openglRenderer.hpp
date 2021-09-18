@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace engine {
-  enum class ObjectType { CUBE, LIGHT };
+  enum class ObjectType { CUBE, PLANE, LIGHT };
   struct MeshData {
     unsigned int vaoId;
     std::vector<unsigned int> bufferIds;
@@ -88,8 +88,17 @@ namespace engine {
     Material material; //replace by lightMaterial
   };
 
+  class Plane : public Object {
+    public:
+    virtual ObjectType getObjectType() {
+      return ObjectType::PLANE;
+    }
+    Material material; //replace by lightMaterial
+  };
+
   class OpenglRenderer {
     public:
+    enum class MeshType { CUBE, PLANE };
     ShaderBuilder shaderBuilder;
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     glm::mat4 viewMatrix = glm::mat4(1.0f);
@@ -100,10 +109,10 @@ namespace engine {
     std::vector<LightData> lightDataContainer;
     std::unique_ptr<GridData> gridData;
     std::unique_ptr<Material> materialData;
-    std::vector<std::unique_ptr<Cube>> cubes;
     std::vector<std::unique_ptr<Object>> objects;
     unsigned int SSBOBufferId;
     std::vector<float> gridGeometry;
+    bool showDepthBuffer = false;
 
     OpenglRenderer();
     void setViewport(int x, int y, int width, int height);
@@ -125,8 +134,8 @@ namespace engine {
     void drawObjects(const glm::vec3& eyePosition, int objectSelectedId);
     void drawGrid(const glm::mat4& modelMatrix);
     void createCube(const glm::mat4& modelMatrix = glm::mat4(1.0f));
+    void createPlane(const glm::mat4& modelMatrix = glm::mat4(1.0f));
     void createLight(LightData lightData, const glm::mat4& modelMatrix = glm::mat4(1.0f));
-    enum class MeshType { CUBE };
     MeshData createMesh(MeshType meshType);
     std::unique_ptr<Shader> setShader(const std::string& shaderName);
 

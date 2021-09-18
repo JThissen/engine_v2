@@ -15,7 +15,6 @@
 #include "windowInput.hpp"
 #include "imGuiLayer.hpp"
 #include "renderer/orthographicCamera.hpp"
-#include "renderer/orthographicCameraController.hpp"
 #include "renderer/perspectiveCamera.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/shaderBuilder.hpp"

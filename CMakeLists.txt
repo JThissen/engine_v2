@@ -35,7 +35,6 @@ set(CPP_FILES
   src/renderer/layoutBuffer.cpp
   src/renderer/renderer.cpp
   src/renderer/orthographicCamera.cpp
-  src/renderer/orthographicCameraController.cpp
   src/renderer/perspectiveCamera.cpp
   src/renderer/geometry.cpp
   src/opengl/openglContext.cpp

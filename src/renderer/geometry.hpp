@@ -10,6 +10,7 @@ namespace engine {
     static std::array<unsigned char, 24> axesColor;
     static std::array<float, 216> cubeGeometry;
     static std::array<unsigned char, 144> cubeColor;
+    static std::array<float, 60> planeGeometry;
   };
 }
 
