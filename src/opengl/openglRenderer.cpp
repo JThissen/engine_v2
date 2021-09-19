@@ -131,6 +131,18 @@ namespace engine {
       quadData->shader->disuseProgram();
     }
 
+    void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId) {
+      glBindTextureUnit(0, textureId);
+      quadData->shader->useProgram();
+      quadData->shader->setUniform1i(1, "hasTexture");
+			glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+      quadData->vertexArray->bind();
+			glDrawElements(GL_TRIANGLES, quadData->vertexArray->indexBuffer->size, GL_UNSIGNED_INT, nullptr);
+      quadData->shader->disuseProgram();
+    }
+
     void OpenglRenderer::setGridData(float x, float z) {
       gridData = std::make_unique<GridData>();
       glGenBuffers(1, &gridData->bufferId);
@@ -318,8 +330,34 @@ namespace engine {
       objects.push_back(std::move(plane));
     }
 
-    void OpenglRenderer::drawObjects(const glm::vec3& eyePosition, int objectSelectedId, float nearPlane, float farPlane) {
+    void OpenglRenderer::drawObjects(
+      const glm::vec3& eyePosition, 
+      int objectSelectedId, 
+      float nearPlane, 
+      float farPlane
+    ) {
       for(int i = 0; i < objects.size(); i++) {
+        if(depthPass) {
+          glCullFace(GL_FRONT);
+          Object* object = objects[i].get();
+          if(object->getObjectType() != ObjectType::LIGHT) {
+            object->shaders["depth"]->useProgram();
+            glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(object->transformData.modelMatrix));
+    	      glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	      glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+            glBindVertexArray(object->meshData.vaoId);
+            int count = 0;
+            switch(object->getObjectType()) {
+              case ObjectType::CUBE: count = 36; break;
+              case ObjectType::PLANE: count = 6; break;
+            }
+            glDrawArrays(GL_TRIANGLES, 0, count);
+            glBindVertexArray(0);
+            object->shaders["depth"]->disuseProgram();
+          }
+          continue;
+        }
+
         if(objectSelectedId == objects[i]->id) {
           //outline pass
           glCullFace(GL_FRONT); 
@@ -369,6 +407,8 @@ namespace engine {
           glUniformMatrix4fv(glGetUniformLocation(cube->shaders["cube"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(cube->transformData.modelMatrix));
     	    glUniformMatrix4fv(glGetUniformLocation(cube->shaders["cube"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
     	    glUniformMatrix4fv(glGetUniformLocation(cube->shaders["cube"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    	    glUniformMatrix4fv(glGetUniformLocation(cube->shaders["cube"]->program, "lightViewProjection"), 1, GL_FALSE, glm::value_ptr(lightViewProjection));
+          glBindTextureUnit(0, depthAttachmentId);
           cube->shaders["cube"]->setUniform1i(cube->id, "id");
           cube->shaders["cube"]->setUniform1f(cube->material.ambientFactor, "material.ambientFactor");
           cube->shaders["cube"]->setUniform1f(cube->material.diffuseFactor, "material.diffuseFactor");
@@ -390,6 +430,8 @@ namespace engine {
           glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(plane->transformData.modelMatrix));
     	    glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
     	    glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+          glUniformMatrix4fv(glGetUniformLocation(plane->shaders["cube"]->program, "lightViewProjection"), 1, GL_FALSE, glm::value_ptr(lightViewProjection));
+          glBindTextureUnit(0, depthAttachmentId);
           plane->shaders["cube"]->setUniform1i(plane->id, "id");
           plane->shaders["cube"]->setUniform1f(plane->material.ambientFactor, "material.ambientFactor");
           plane->shaders["cube"]->setUniform1f(plane->material.diffuseFactor, "material.diffuseFactor");

@@ -17,9 +17,10 @@ class SandboxLayer : public engine::Layer {
 
   private:
   std::unique_ptr<engine::FrameBuffer> frameBuffer;
+  std::unique_ptr<engine::FrameBuffer> frameBuffer2;
   std::shared_ptr<engine::OpenglRenderer> openglRenderer;
   std::shared_ptr<engine::PerspectiveCamera> editorCamera;
-  // std::shared_ptr<engine::OrthographicCamera> editorCamera;
+  // std::shared_ptr<engine::OrthographicCamera> orthographicCamera;
   std::shared_ptr<engine::OpenglTexture> texture;
   std::unique_ptr<engine::Scene> scene;
   glm::vec2 viewportDimensions;

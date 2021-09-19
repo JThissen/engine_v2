@@ -103,6 +103,7 @@ namespace engine {
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     glm::mat4 projectionMatrix = glm::mat4(1.0f);
+    glm::mat4 lightViewProjection = glm::mat4(1.0f);
     std::unique_ptr<QuadData> quadData;
     std::unique_ptr<FrameBufferData> frameBufferData;
     std::unique_ptr<AxesData> axesData;
@@ -112,7 +113,8 @@ namespace engine {
     std::vector<std::unique_ptr<Object>> objects;
     unsigned int SSBOBufferId;
     std::vector<float> gridGeometry;
-    bool showDepthBuffer = false;
+    bool depthPass = false;
+    unsigned int depthAttachmentId;
 
     OpenglRenderer();
     void setViewport(int x, int y, int width, int height);
@@ -128,6 +130,7 @@ namespace engine {
     void drawFrameBufferToViewport();
     void drawQuad(const glm::mat4& modelMatrix, const glm::vec4& color);
     void drawQuad(const glm::mat4& modelMatrix, std::shared_ptr<OpenglTexture> texture);
+    void drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId);
     void setAxesData();
     void setGridData(float x = 10.0f, float z = 10.0f);
     void drawAxes(const glm::mat4& modelMatrix);
