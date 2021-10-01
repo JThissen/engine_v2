@@ -22,3 +22,4 @@
 #include <typeinfo>
 #include <filesystem>
 #include <random>
+#include <stdexcept>

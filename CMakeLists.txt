@@ -37,6 +37,7 @@ set(CPP_FILES
   src/renderer/orthographicCamera.cpp
   src/renderer/perspectiveCamera.cpp
   src/renderer/geometry.cpp
+  src/renderer/cascadedShadowMaps.cpp
   src/opengl/openglContext.cpp
   src/opengl/openglVertexBuffer.cpp
   src/opengl/openglIndexBuffer.cpp

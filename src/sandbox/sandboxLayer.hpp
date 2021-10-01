@@ -14,10 +14,10 @@ class SandboxLayer : public engine::Layer {
   virtual void createImGuiLayout() override;
   void setViewportMousePosition();
   void setObjectSelectedId();
-
+  
   private:
   std::unique_ptr<engine::FrameBuffer> frameBuffer;
-  std::unique_ptr<engine::FrameBuffer> frameBuffer2;
+  std::unique_ptr<engine::FrameBuffer> frameBufferDebug_1;
   std::shared_ptr<engine::OpenglRenderer> openglRenderer;
   std::shared_ptr<engine::PerspectiveCamera> editorCamera;
   // std::shared_ptr<engine::OrthographicCamera> orthographicCamera;
@@ -30,7 +30,9 @@ class SandboxLayer : public engine::Layer {
   glm::vec2 viewportSize = { 0.0, 0.0 };
   bool hasMouseEnterWindow = false;
   bool autoScroll = true;
+  bool frustumCreated = false;
   int objectSelectedId = -1;
+  std::unique_ptr<engine::CascadedShadowMaps> cascadedShadowMaps;
 };
 
 #endif

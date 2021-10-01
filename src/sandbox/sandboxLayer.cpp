@@ -22,14 +22,18 @@ SandboxLayer::SandboxLayer(int windowWidth, int windowHeight)
     engine::FrameBufferTextureFormat::RGBA8
   };
   frameBuffer = std::make_unique<engine::FrameBuffer>(spec);
-  frameBuffer2 = std::make_unique<engine::FrameBuffer>(spec);
+  frameBufferDebug_1 = std::make_unique<engine::FrameBuffer>(spec);
+  // frameBuffer3 = std::make_unique<engine::FrameBuffer>(spec);
   openglRenderer = std::make_shared<engine::OpenglRenderer>();
   editorCamera = std::make_shared<engine::PerspectiveCamera>(viewportDimensions.x, viewportDimensions.y);
   openglRenderer->viewMatrix = editorCamera->view;
   openglRenderer->projectionMatrix = editorCamera->projection;
   openglRenderer->createCube();
-  openglRenderer->createPlane(glm::scale(glm::mat4(1.0f), glm::vec3(15.0f, 1.0f, 15.0f)));
-
+  openglRenderer->createCube(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 3.0f)));
+  openglRenderer->createCube(glm::translate(glm::mat4(1.0f), glm::vec3(-6.0f, 0.0f, -7.0f)));
+  openglRenderer->createPlane(glm::scale(glm::mat4(1.0f), glm::vec3(25.0f, 1.0f, 25.0f)));
+  cascadedShadowMaps = std::make_unique<engine::CascadedShadowMaps>(openglRenderer, editorCamera);
+  
   //TODO: texture loader class
   texture = std::make_shared<engine::OpenglTexture>("./../src/sandbox/assets/wood.jpg");
 
@@ -42,34 +46,41 @@ SandboxLayer::SandboxLayer(int windowWidth, int windowHeight)
 }
 
 void SandboxLayer::update(float time, engine::DeltaTime deltaTime) {
-  openglRenderer->depthPass = false;
-  frameBuffer->bind();
-  openglRenderer->setClearColor(glm::vec4(0.24f, 0.24f, 0.24f, 1.0f));
-  openglRenderer->clear();
-  glm::mat4 lightView = glm::lookAt(glm::vec3(5.0f, 4.0f, 7.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-  openglRenderer->viewMatrix = lightView;
-  openglRenderer->projectionMatrix = lightProjection;
+  cascadedShadowMaps->bind();
+  openglRenderer->drawAxes(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.001f, 0.0f)));
   openglRenderer->drawObjects(editorCamera->position, objectSelectedId, editorCamera->nearPlane, editorCamera->farPlane);
-  setViewportMousePosition();
-  setObjectSelectedId();
-  frameBuffer->unbind();
+  openglRenderer->drawGrid(glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f, 0.0f, -50.0f)));
+  cascadedShadowMaps->unbind();
 
+  // DEBUG: render depth textures to quads
   openglRenderer->depthPass = false;
-  openglRenderer->depthAttachmentId = frameBuffer->depthAttachmentId;
-  frameBuffer2->bind();
+  frameBufferDebug_1->bind();
   openglRenderer->setClearColor(glm::vec4(0.24f, 0.24f, 0.24f, 1.0f));
   openglRenderer->clear();
   editorCamera->updateView(deltaTime, mousePosition, hasMouseEnterWindow);
-  openglRenderer->viewMatrix = editorCamera->view;
-  openglRenderer->projectionMatrix = editorCamera->projection;
-  openglRenderer->lightViewProjection = lightProjection * lightView;
+  openglRenderer->modelMatrix = glm::mat4(1.0f);
+  openglRenderer->drawAxes(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.001f, 0.0f)));
+  openglRenderer->drawGrid(glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f, 0.0f, -50.0f)));
+  openglRenderer->drawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 0.0f)), cascadedShadowMaps->depthTextures, 0, true);
+  frameBufferDebug_1->unbind();
+
+  frameBuffer->bind();
+  openglRenderer->setClearColor(glm::vec4(0.24f, 0.24f, 0.24f, 1.0f));
+  openglRenderer->clear();
+  editorCamera->updateView(deltaTime, mousePosition, hasMouseEnterWindow);
+  // DEBUG: 2nd view
+  glm::mat4 view = glm::lookAt(glm::vec3(25.0f, 15.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 projection = glm::perspective(glm::radians(45.0f), viewportDimensions.x / viewportDimensions.y, 0.1f, 1000.0f);
+  openglRenderer->viewMatrix = view;
+  openglRenderer->projectionMatrix = projection;
+  // openglRenderer->viewMatrix = editorCamera->view;
+  // openglRenderer->projectionMatrix = editorCamera->projection;
   openglRenderer->drawAxes(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.001f, 0.0f)));
   openglRenderer->drawObjects(editorCamera->position, objectSelectedId, editorCamera->nearPlane, editorCamera->farPlane);
   openglRenderer->drawGrid(glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f, 0.0f, -50.0f)));
   setViewportMousePosition();
   setObjectSelectedId();
-  frameBuffer2->unbind();
+  frameBuffer->unbind();
 }
 
 void SandboxLayer::setViewportMousePosition() {
@@ -87,7 +98,7 @@ void SandboxLayer::setViewportMousePosition() {
 void SandboxLayer::setObjectSelectedId() {
   if (engine::WindowInput::isMousePressed(engine::Mouse::MouseCode::ButtonLeft) && viewportMousePosition.x >= 0 && viewportMousePosition.y >= 0 && viewportMousePosition.x <= viewportSize.x && viewportMousePosition.y <= viewportSize.y)
   {
-    int pixelData = frameBuffer2->readPixel(1, viewportMousePosition.x, viewportMousePosition.y);
+    int pixelData = frameBuffer->readPixel(1, viewportMousePosition.x, viewportMousePosition.y);
     objectSelectedId = pixelData;
   }
 }
@@ -266,19 +277,19 @@ void SandboxLayer::createImGuiLayout() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
   ImGui::Begin("Viewport");
   ImVec2 offset = ImGui::GetCursorPos();
-  unsigned int texture = frameBuffer2->colorAttachmentIds[0];
-  // unsigned int texture2 = frameBuffer2->depthAttachmentId;
-  unsigned int texture2 = frameBuffer2->colorAttachmentIds[2];
   ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
   glm::vec2 newViewportDimensions = {contentRegionAvailable.x, contentRegionAvailable.y};
-  if (viewportDimensions != newViewportDimensions)
-  {
+  if (viewportDimensions != newViewportDimensions) {
     frameBuffer->onResize(static_cast<int>(newViewportDimensions.x), static_cast<int>(newViewportDimensions.y));
-    frameBuffer2->onResize(static_cast<int>(newViewportDimensions.x), static_cast<int>(newViewportDimensions.y));
+    frameBufferDebug_1->onResize(static_cast<int>(newViewportDimensions.x), static_cast<int>(newViewportDimensions.y));
     viewportDimensions = newViewportDimensions;
   }
-  ImGui::Image(reinterpret_cast<void *>(texture), {viewportDimensions.x, viewportDimensions.y - 115.0f}, {0, 1}, {1, 0});
-  ImGui::Image(reinterpret_cast<void *>(texture2), {192.0f, 108.0f}, {0, 1}, {1, 0});
+  ImGui::Image(reinterpret_cast<void *>(frameBuffer->colorAttachmentIds[0]), {viewportDimensions.x, viewportDimensions.y - 115.0f}, {0, 1}, {1, 0});
+  ImGui::Image(reinterpret_cast<void *>(frameBufferDebug_1->colorAttachmentIds[0]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+  ImGui::SameLine();
+  ImGui::Image(reinterpret_cast<void *>(frameBufferDebug_1->colorAttachmentIds[1]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+  ImGui::SameLine();
+  ImGui::Image(reinterpret_cast<void *>(frameBufferDebug_1->colorAttachmentIds[2]), {192.0f, 108.0f}, {0, 1}, {1, 0});
 
   ImVec2 windowSize = ImGui::GetWindowSize();
   ImVec2 windowPosition = ImGui::GetWindowPos();

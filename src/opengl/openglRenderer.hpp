@@ -10,10 +10,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace engine {
-  enum class ObjectType { CUBE, PLANE, LIGHT };
+  enum class ObjectType { CUBE, PLANE, LIGHT, FRUSTUM };
   struct MeshData {
     unsigned int vaoId;
+    unsigned int indicesBufferid;
     std::vector<unsigned int> bufferIds;
+    std::vector<unsigned int> indices;
   };
   struct FrameBufferData {
     std::unique_ptr<OpenglVertexArray> vertexArray;
@@ -96,6 +98,15 @@ namespace engine {
     Material material; //replace by lightMaterial
   };
 
+  class Frustum : public Object {
+    public:
+    int count;
+    std::array<glm::vec3, 8> frustumCoordinates;
+    virtual ObjectType getObjectType() {
+      return ObjectType::FRUSTUM;
+    }
+  };
+
   class OpenglRenderer {
     public:
     enum class MeshType { CUBE, PLANE };
@@ -115,6 +126,9 @@ namespace engine {
     std::vector<float> gridGeometry;
     bool depthPass = false;
     unsigned int depthAttachmentId;
+    std::vector<float> shadowCascadeLevels;
+    glm::vec3 lightDir;
+    std::vector<std::pair<std::string, std::array<glm::vec3, 8>>> frustums;
 
     OpenglRenderer();
     void setViewport(int x, int y, int width, int height);
@@ -130,15 +144,17 @@ namespace engine {
     void drawFrameBufferToViewport();
     void drawQuad(const glm::mat4& modelMatrix, const glm::vec4& color);
     void drawQuad(const glm::mat4& modelMatrix, std::shared_ptr<OpenglTexture> texture);
-    void drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId);
+    void drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId, int layer, bool isDepthTexture = false);
     void setAxesData();
     void setGridData(float x = 10.0f, float z = 10.0f);
     void drawAxes(const glm::mat4& modelMatrix);
-    void drawObjects(const glm::vec3& eyePosition, int objectSelectedId, float nearPlane, float farPlane);
+    void drawObjects(glm::vec3 eyePosition, int objectSelectedId, float nearPlane, float farPlane);
     void drawGrid(const glm::mat4& modelMatrix);
+    void drawFrustum();
     void createCube(const glm::mat4& modelMatrix = glm::mat4(1.0f));
     void createPlane(const glm::mat4& modelMatrix = glm::mat4(1.0f));
     void createLight(LightData lightData, const glm::mat4& modelMatrix = glm::mat4(1.0f));
+    int createFrustum(const glm::mat4& modelMatrix, const std::array<glm::vec3, 8>& frustumCoordinates, int count);
     MeshData createMesh(MeshType meshType);
     std::unique_ptr<Shader> setShader(const std::string& shaderName);
 

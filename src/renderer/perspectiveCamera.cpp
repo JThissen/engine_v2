@@ -12,15 +12,40 @@ namespace engine {
 
   void PerspectiveCamera::handleKeyPress(DeltaTime deltaTime) {
     if(WindowInput::isKeyPressed(Key::KeyCode::A)) {
-      position -= glm::normalize(glm::cross(y, z)) * speed * deltaTime.seconds();
+      position += x * speed * deltaTime.seconds();
+      // position -= glm::normalize(glm::cross(y, z)) * speed * deltaTime.seconds();
     } else if(WindowInput::isKeyPressed(Key::KeyCode::D)) {
-      position += glm::normalize(glm::cross(y, z)) * speed * deltaTime.seconds();
+      position -= x * speed * deltaTime.seconds();
+      // position += glm::normalize(glm::cross(y, z)) * speed * deltaTime.seconds();
     }
     if(WindowInput::isKeyPressed(Key::KeyCode::S)) {
       position += z * speed * deltaTime.seconds();
     } else if(WindowInput::isKeyPressed(Key::KeyCode::W)) {
       position -= z * speed * deltaTime.seconds();
     }
+  }
+
+  std::array<glm::vec3, 8> PerspectiveCamera::calculateFrustumCoordinates(float nearPlane, float farPlane) {
+    auto model = glm::inverse(view);
+    auto pos = glm::vec3(model[3][0], model[3][1], model[3][2]);
+    glm::vec3 nearPosition = pos + z * nearPlane;
+    glm::vec3 farPosition = pos + z * farPlane;
+
+    float nearHeight = nearPlane * glm::tan(glm::radians(fov / 2.0f));
+    float nearWidth = nearHeight * aspectRatio;
+    float farHeight = farPlane * glm::tan(glm::radians(fov / 2.0f));
+    float farWidth = farHeight * aspectRatio;
+
+    std::array<glm::vec3, 8> frustumCoordinates;
+    frustumCoordinates[0] = nearPosition - y * nearHeight - x * nearWidth;
+    frustumCoordinates[1] = nearPosition + y * nearHeight - x * nearWidth;
+    frustumCoordinates[2] = nearPosition + y * nearHeight + x * nearWidth;
+    frustumCoordinates[3] = nearPosition - y * nearHeight + x * nearWidth;
+    frustumCoordinates[4] = farPosition - y * farHeight - x * farWidth;
+    frustumCoordinates[5] = farPosition + y * farHeight - x * farWidth;
+    frustumCoordinates[6] = farPosition + y * farHeight + x * farWidth;
+    frustumCoordinates[7] = farPosition - y * farHeight + x * farWidth;
+    return frustumCoordinates;
   }
 
   void PerspectiveCamera::updateView(DeltaTime deltaTime, const glm::vec2& mousePosition, bool hasMouseEnterWindow) {
@@ -45,8 +70,10 @@ namespace engine {
     glm::mat4 rotate = glm::toMat4(qPitchYaw);
     glm::mat4 translate = glm::translate(glm::mat4(1.0f), position);
     view = rotate * translate;
-    x = glm::rotate(glm::inverse(qPitchYaw), glm::vec3(1.0, 0.0, 0.0));
-    z = glm::rotate(glm::inverse(qPitchYaw), glm::vec3(0.0, 0.0, -1.0));
+    x = glm::normalize(glm::rotate(glm::inverse(qPitchYaw), glm::vec3(1.0, 0.0, 0.0)));
+    z = glm::normalize(glm::rotate(glm::inverse(qPitchYaw), glm::vec3(0.0, 0.0, -1.0)));
+    y = glm::normalize(glm::cross(z, x));
+    // calculateFrustumCoordinates();
   }
 
   void PerspectiveCamera::scroll(const MouseScrolledEvent& mouseScrolledEvent) {

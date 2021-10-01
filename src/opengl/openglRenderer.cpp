@@ -29,8 +29,8 @@ namespace engine {
       lightData2.attenuation = 0.0f;
       lightData2.radius = 20.0f;
 
-      createLight(lightData, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 7.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f)));
-      createLight(lightData2, glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f)));
+      createLight(lightData, glm::translate(glm::mat4(1.0f), glm::vec3(-0.513f, 0.513f, -5.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f)));
+      createLight(lightData2, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 5.0f, 5.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.25f)));
     }
 
     void OpenglRenderer::setViewport(int x, int y, int width, int height) {
@@ -104,7 +104,7 @@ namespace engine {
       auto indexBuffer = std::make_shared<OpenglIndexBuffer>(indices.data(), indices.size());
       quadData->vertexArray->pushVertexBuffer(vertexBuffer);
       quadData->vertexArray->setIndexBuffer(indexBuffer);
-      quadData->shader = setShader("basic");
+      quadData->shader = setShader("visualize");
     }
 
     void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, const glm::vec4& color) {
@@ -131,10 +131,16 @@ namespace engine {
       quadData->shader->disuseProgram();
     }
 
-    void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId) {
-      glBindTextureUnit(0, textureId);
+    void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId, int layer, bool isDepthTexture) {
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D_ARRAY, textureId);
       quadData->shader->useProgram();
-      quadData->shader->setUniform1i(1, "hasTexture");
+      if(isDepthTexture) {
+        quadData->shader->setUniform1i(1, "isDepthTexture");
+      } else {
+        quadData->shader->setUniform1i(1, "hasTexture");
+      }
+      quadData->shader->setUniform1i(layer, "layer");
 			glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
     	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
     	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
@@ -191,12 +197,18 @@ namespace engine {
       ss << "./../src/shaders/" << shaderName << ".vs";
       std::string vsPath = ss.str();
       ss.str("");
+      ss << "./../src/shaders/" << shaderName << ".gs";
+      std::string gsPath = ss.str();
+      ss.str("");
       ss << "./../src/shaders/" << shaderName << ".fs";
       std::string fsPath = ss.str();
       shaderBuilder.createProgram()
-        .attachVertexShader(vsPath)
-        .attachFragmentShader(fsPath)
-        .linkProgram();
+        .attachVertexShader(vsPath);
+
+      if(std::filesystem::exists(gsPath)) {
+        shaderBuilder.attachGeometryShader(gsPath);
+      }
+      shaderBuilder.attachFragmentShader(fsPath).linkProgram();
       return std::move(shaderBuilder.shader);
     }
 
@@ -283,6 +295,7 @@ namespace engine {
       cube->shaders.insert({"cube", setShader("cube")});
       cube->shaders.insert({"basic", setShader("basic")});
       cube->shaders.insert({"depth", setShader("depth")});
+      cube->shaders.insert({"depth2", setShader("depth2")});
       cube->material.ambientFactor    = 0.25f;
       cube->material.diffuseFactor    = 0.15f;
       cube->material.specularFactor   = 0.3f;
@@ -311,6 +324,7 @@ namespace engine {
       plane->shaders.insert({"cube", setShader("cube")});
       plane->shaders.insert({"basic", setShader("basic")});
       plane->shaders.insert({"depth", setShader("depth")});
+      plane->shaders.insert({"depth2", setShader("depth2")});
       plane->material.ambientFactor    = 0.25f;
       plane->material.diffuseFactor    = 0.15f;
       plane->material.specularFactor   = 0.3f;
@@ -331,20 +345,19 @@ namespace engine {
     }
 
     void OpenglRenderer::drawObjects(
-      const glm::vec3& eyePosition, 
+      glm::vec3 eyePosition, 
       int objectSelectedId, 
       float nearPlane, 
       float farPlane
     ) {
       for(int i = 0; i < objects.size(); i++) {
         if(depthPass) {
-          glCullFace(GL_FRONT);
           Object* object = objects[i].get();
           if(object->getObjectType() != ObjectType::LIGHT) {
-            object->shaders["depth"]->useProgram();
-            glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(object->transformData.modelMatrix));
-    	      glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-    	      glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+            object->shaders["depth2"]->useProgram();
+            glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth2"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(object->transformData.modelMatrix));
+    	      glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth2"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	      glUniformMatrix4fv(glGetUniformLocation(object->shaders["depth2"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
             glBindVertexArray(object->meshData.vaoId);
             int count = 0;
             switch(object->getObjectType()) {
@@ -353,7 +366,7 @@ namespace engine {
             }
             glDrawArrays(GL_TRIANGLES, 0, count);
             glBindVertexArray(0);
-            object->shaders["depth"]->disuseProgram();
+            object->shaders["depth2"]->disuseProgram();
           }
           continue;
         }
@@ -418,6 +431,11 @@ namespace engine {
           cube->shaders["cube"]->setUniform1f(farPlane, "farPlane");
           cube->shaders["cube"]->setUniform1f(cube->material.shininessFactor, "far");
           cube->shaders["cube"]->setUniform3fv(eyePosition, "eye");
+          cube->shaders["cube"]->setUniform3fv(lightDir, "lightDir");
+          cube->shaders["cube"]->setUniform1i(shadowCascadeLevels.size(), "cascadeCount");
+          for(int i = 0; i < shadowCascadeLevels.size(); i++) {
+            cube->shaders["cube"]->setUniform1f(shadowCascadeLevels[i], "cascadePlaneDistances[" + std::to_string(i) + "]");
+          }
           glBindVertexArray(cube->meshData.vaoId);
           glDrawArrays(GL_TRIANGLES, 0, 36);
           glBindVertexArray(0);
@@ -440,10 +458,45 @@ namespace engine {
           plane->shaders["cube"]->setUniform1f(nearPlane, "nearPlane");
           plane->shaders["cube"]->setUniform1f(farPlane, "farPlane");
           plane->shaders["cube"]->setUniform3fv(eyePosition, "eye");
+          plane->shaders["cube"]->setUniform3fv(lightDir, "lightDir");
+          plane->shaders["cube"]->setUniform1i(shadowCascadeLevels.size(), "cascadeCount");
+          for(int i = 0; i < shadowCascadeLevels.size(); i++) {
+            plane->shaders["cube"]->setUniform1f(shadowCascadeLevels[i], "cascadePlaneDistances[" + std::to_string(i) + "]");
+          }
           glBindVertexArray(plane->meshData.vaoId);
           glDrawArrays(GL_TRIANGLES, 0, 6);
           glBindVertexArray(0);
           plane->shaders["cube"]->disuseProgram();
+        } else if(objects[i]->getObjectType() == ObjectType::FRUSTUM) {
+          Frustum* frustum = dynamic_cast<Frustum*>(objects[i].get());
+          // normal pass
+          glCullFace(GL_BACK);
+          frustum->shaders["basic"]->useProgram();
+          glUniformMatrix4fv(glGetUniformLocation(frustum->shaders["basic"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(frustum->transformData.modelMatrix));
+    	    glUniformMatrix4fv(glGetUniformLocation(frustum->shaders["basic"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	    glUniformMatrix4fv(glGetUniformLocation(frustum->shaders["basic"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+          frustum->shaders["basic"]->setUniform1i(frustum->id, "id");
+          frustum->shaders["basic"]->setUniform1i(0, "hasTexture");
+          glm::vec4 color = glm::vec4(1.0f);
+          switch(frustum->count) {
+            case 0: color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); break;
+            case 1: color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f); break;
+            case 2: color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); break;
+            case 3: color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f); break;
+          }
+          frustum->shaders["basic"]->setUniform4fv(color, "color");
+          glBindVertexArray(frustum->meshData.vaoId);
+          std::vector<float> frustumCoordinatesFloat;
+          for(int i = 0; i < frustum->frustumCoordinates.size(); i++) {
+            frustumCoordinatesFloat.push_back(frustum->frustumCoordinates[i].x);
+            frustumCoordinatesFloat.push_back(frustum->frustumCoordinates[i].y);
+            frustumCoordinatesFloat.push_back(frustum->frustumCoordinates[i].z);
+          }
+          glBindBuffer(GL_ARRAY_BUFFER, frustum->meshData.bufferIds[0]);
+          glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * frustumCoordinatesFloat.size(), &frustumCoordinatesFloat[0]);
+          glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, frustum->meshData.indicesBufferid);
+          glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
+          frustum->shaders["basic"]->disuseProgram();
         }
       }
     }
@@ -475,5 +528,59 @@ namespace engine {
       glDrawArrays(GL_LINES, 4, 2);
       glBindVertexArray(0);
       axesData->shader->disuseProgram();
+    }
+
+    int OpenglRenderer::createFrustum(const glm::mat4& modelMatrix, const std::array<glm::vec3, 8>& frustumCoordinates, int count) {
+      std::vector<float> frustumCoordinatesFloat;
+      for(int i = 0; i < frustumCoordinates.size(); i++) {
+        frustumCoordinatesFloat.push_back(frustumCoordinates[i].x);
+        frustumCoordinatesFloat.push_back(frustumCoordinates[i].y);
+        frustumCoordinatesFloat.push_back(frustumCoordinates[i].z);
+      }
+
+      auto object = std::make_unique<Frustum>();
+      object->id = UUID::createInt();
+      int objectId = object->id;
+      object->name = "Frustum-" + std::to_string(object->id);
+      object->frustumCoordinates = frustumCoordinates;
+      object->count = count;
+      MeshData meshData;
+      meshData.bufferIds = std::vector<unsigned int>(1, 0);
+      glGenBuffers(1, meshData.bufferIds.data());
+      glBindBuffer(GL_ARRAY_BUFFER, meshData.bufferIds[0]);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(float) * frustumCoordinatesFloat.size(), static_cast<void*>(frustumCoordinatesFloat.data()), GL_STATIC_DRAW);
+      glGenVertexArrays(1, &(meshData.vaoId));
+      glBindVertexArray(meshData.vaoId);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, nullptr);
+      meshData.indicesBufferid = 0;
+      glGenBuffers(1, &meshData.indicesBufferid);
+      meshData.indices = {
+        0, 1, // near
+        1, 2,
+        2, 3,
+        3, 0,
+        4, 5, // far
+        5, 6,
+        6, 7,
+        7, 4,
+        0, 4, // connections
+        1, 5,
+        2, 6,
+        3, 7
+      };
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indicesBufferid);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * meshData.indices.size(), &meshData.indices[0], GL_STATIC_DRAW);
+      glBindVertexArray(0);
+      object->meshData = meshData;
+      object->shaders.insert({"basic", setShader("basic")});
+      object->shaders.insert({"outline", setShader("outline")});
+      object->shaders.insert({"depth", setShader("depth")});
+      object->shaders.insert({"depth2", setShader("depth2")});
+      object->transformData.modelMatrix = modelMatrix;
+      object->transformData.rotation = { 0.0f, 0.0f, 0.0f };
+      object->transformData.scale = { modelMatrix[0][0], modelMatrix[1][1], modelMatrix[2][2] };
+      objects.push_back(std::move(object));
+      return objectId;
     }
 }

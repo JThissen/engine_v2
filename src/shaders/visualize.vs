@@ -12,5 +12,5 @@ uniform mat4 projectionMatrix;
 void main() {
   position = layoutPosition;
   textureCoords = layoutTextureCoords;
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(layoutPosition, 1.0);
+  gl_Position = modelMatrix * vec4(layoutPosition, 1.0);
 }
