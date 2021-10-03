@@ -17,6 +17,7 @@ class SandboxLayer : public engine::Layer {
   
   private:
   std::unique_ptr<engine::FrameBuffer> frameBuffer;
+  std::unique_ptr<engine::FrameBuffer> frameBuffer_2;
   std::unique_ptr<engine::FrameBuffer> frameBufferDebug_1;
   std::shared_ptr<engine::OpenglRenderer> openglRenderer;
   std::shared_ptr<engine::PerspectiveCamera> editorCamera;
@@ -33,6 +34,7 @@ class SandboxLayer : public engine::Layer {
   bool frustumCreated = false;
   int objectSelectedId = -1;
   std::unique_ptr<engine::CascadedShadowMaps> cascadedShadowMaps;
+  std::unique_ptr<engine::Bloom> bloom;
 };
 
 #endif

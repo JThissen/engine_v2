@@ -22,6 +22,7 @@
 #include "renderer/layout.hpp"
 #include "renderer/geometry.hpp"
 #include "renderer/cascadedShadowMaps.hpp"
+#include "renderer/bloom.hpp"
 #include "opengl/openglVertexArray.hpp"
 #include "opengl/openglRenderer.hpp"
 #include "opengl/openglTexture.hpp"

@@ -24,7 +24,7 @@ namespace engine {
 
   struct QuadData {
     std::unique_ptr<OpenglVertexArray> vertexArray;
-    std::unique_ptr<Shader> shader;
+    std::unordered_map<std::string, std::unique_ptr<Shader>> shaders;
   };
 
   struct AxesData {
@@ -145,8 +145,9 @@ namespace engine {
     void drawQuad(const glm::mat4& modelMatrix, const glm::vec4& color);
     void drawQuad(const glm::mat4& modelMatrix, std::shared_ptr<OpenglTexture> texture);
     void drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId, int layer, bool isDepthTexture = false);
-    void setAxesData();
-    void setGridData(float x = 10.0f, float z = 10.0f);
+    void drawQuad(const glm::mat4& modelMatrix, unsigned int textureA, unsigned int textureB);
+    void createAxes();
+    void createGrid(float x = 10.0f, float z = 10.0f);
     void drawAxes(const glm::mat4& modelMatrix);
     void drawObjects(glm::vec3 eyePosition, int objectSelectedId, float nearPlane, float farPlane);
     void drawGrid(const glm::mat4& modelMatrix);
@@ -160,7 +161,7 @@ namespace engine {
 
     private:
     void setFrameBufferData();
-    void setQuadData();
+    void createQuad();
   };
 }
 

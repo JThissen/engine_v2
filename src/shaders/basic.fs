@@ -5,7 +5,7 @@ in vec2 textureCoords;
 
 layout (location = 0) out vec4 fragment;
 layout (location = 1) out int fragmentId;
-layout (location = 2) out vec4 depth;
+layout (location = 2) out vec4 brightness;
 
 uniform int hasTexture;
 uniform vec4 color;
@@ -27,5 +27,5 @@ void main() {
     fragment = color;
   }
   fragmentId = id;
-  depth = vec4(vec3(linearize_depth(gl_FragCoord.z, nearPlane, farPlane) / farPlane), 1.0);
+  brightness = color;
 }

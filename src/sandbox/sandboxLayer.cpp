@@ -22,8 +22,8 @@ SandboxLayer::SandboxLayer(int windowWidth, int windowHeight)
     engine::FrameBufferTextureFormat::RGBA8
   };
   frameBuffer = std::make_unique<engine::FrameBuffer>(spec);
+  frameBuffer_2 = std::make_unique<engine::FrameBuffer>(spec);
   frameBufferDebug_1 = std::make_unique<engine::FrameBuffer>(spec);
-  // frameBuffer3 = std::make_unique<engine::FrameBuffer>(spec);
   openglRenderer = std::make_shared<engine::OpenglRenderer>();
   editorCamera = std::make_shared<engine::PerspectiveCamera>(viewportDimensions.x, viewportDimensions.y);
   openglRenderer->viewMatrix = editorCamera->view;
@@ -33,6 +33,7 @@ SandboxLayer::SandboxLayer(int windowWidth, int windowHeight)
   openglRenderer->createCube(glm::translate(glm::mat4(1.0f), glm::vec3(-6.0f, 0.0f, -7.0f)));
   openglRenderer->createPlane(glm::scale(glm::mat4(1.0f), glm::vec3(25.0f, 1.0f, 25.0f)));
   cascadedShadowMaps = std::make_unique<engine::CascadedShadowMaps>(openglRenderer, editorCamera);
+  bloom = std::make_unique<engine::Bloom>(viewportDimensions.x, viewportDimensions.y);
   
   //TODO: texture loader class
   texture = std::make_shared<engine::OpenglTexture>("./../src/sandbox/assets/wood.jpg");
@@ -64,6 +65,7 @@ void SandboxLayer::update(float time, engine::DeltaTime deltaTime) {
   openglRenderer->drawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 0.0f)), cascadedShadowMaps->depthTextures, 0, true);
   frameBufferDebug_1->unbind();
 
+
   frameBuffer->bind();
   openglRenderer->setClearColor(glm::vec4(0.24f, 0.24f, 0.24f, 1.0f));
   openglRenderer->clear();
@@ -81,6 +83,14 @@ void SandboxLayer::update(float time, engine::DeltaTime deltaTime) {
   setViewportMousePosition();
   setObjectSelectedId();
   frameBuffer->unbind();
+
+  bloom->gaussianBlur(frameBuffer->colorAttachmentIds[2]);
+
+  frameBuffer_2->bind();
+  openglRenderer->setClearColor(glm::vec4(0.24f, 0.24f, 0.24f, 1.0f));
+  openglRenderer->clear();
+  openglRenderer->drawQuad(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f)), frameBuffer->colorAttachmentIds[0], bloom->textures[0]);
+  frameBuffer_2->unbind();
 }
 
 void SandboxLayer::setViewportMousePosition() {
@@ -159,8 +169,7 @@ void SandboxLayer::createImGuiLayout() {
   }
 
   ImGui::Begin("Settings");
-  if (ImGui::CollapsingHeader("Editor Camera", ImGuiTreeNodeFlags_DefaultOpen))
-  {
+  if (ImGui::CollapsingHeader("Editor Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
     ImGui::PushID(100);
     glm::vec3 &position = editorCamera->position;
     ImGui::SliderFloat3("Position", glm::value_ptr(position), -20.0f, 20.0f);
@@ -174,6 +183,11 @@ void SandboxLayer::createImGuiLayout() {
     editorCamera->updateProjection();
     // ImGui::Checkbox("Depth buffer", &openglRenderer->showDepthBuffer);
     ImGui::Separator();
+    ImGui::PopID();
+  }
+  if(ImGui::CollapsingHeader("Effects", ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::PushID(102);
+    ImGui::SliderInt("Amount", &bloom->amount, 0, 100);
     ImGui::PopID();
   }
   if (ImGui::CollapsingHeader("Hierarchy", ImGuiTreeNodeFlags_DefaultOpen))
@@ -284,12 +298,21 @@ void SandboxLayer::createImGuiLayout() {
     frameBufferDebug_1->onResize(static_cast<int>(newViewportDimensions.x), static_cast<int>(newViewportDimensions.y));
     viewportDimensions = newViewportDimensions;
   }
-  ImGui::Image(reinterpret_cast<void *>(frameBuffer->colorAttachmentIds[0]), {viewportDimensions.x, viewportDimensions.y - 115.0f}, {0, 1}, {1, 0});
-  ImGui::Image(reinterpret_cast<void *>(frameBufferDebug_1->colorAttachmentIds[0]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+
+  // ImGui::Image(reinterpret_cast<void*>(bloom->textures[0]), {viewportDimensions.x, viewportDimensions.y - 115.0f}, {0, 1}, {1, 0});
+  ImGui::Image(reinterpret_cast<void*>(frameBuffer_2->colorAttachmentIds[0]), {viewportDimensions.x, viewportDimensions.y - 115.0f}, {0, 1}, {1, 0});
+  // ImGui::Image(reinterpret_cast<void*>(frameBuffer->colorAttachmentIds[0]), {viewportDimensions.x, viewportDimensions.y - 115.0f}, {0, 1}, {1, 0});
+  ImGui::Image(reinterpret_cast<void*>(frameBufferDebug_1->colorAttachmentIds[0]), {192.0f, 108.0f}, {0, 1}, {1, 0});
   ImGui::SameLine();
-  ImGui::Image(reinterpret_cast<void *>(frameBufferDebug_1->colorAttachmentIds[1]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+  ImGui::Image(reinterpret_cast<void*>(frameBufferDebug_1->colorAttachmentIds[1]), {192.0f, 108.0f}, {0, 1}, {1, 0});
   ImGui::SameLine();
-  ImGui::Image(reinterpret_cast<void *>(frameBufferDebug_1->colorAttachmentIds[2]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+  ImGui::Image(reinterpret_cast<void*>(frameBufferDebug_1->colorAttachmentIds[2]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+  ImGui::SameLine();
+  ImGui::Image(reinterpret_cast<void*>(frameBuffer->colorAttachmentIds[2]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+
+  ImGui::SameLine();
+  ImGui::Image(reinterpret_cast<void*>(frameBuffer->colorAttachmentIds[0]), {192.0f, 108.0f}, {0, 1}, {1, 0});
+
 
   ImVec2 windowSize = ImGui::GetWindowSize();
   ImVec2 windowPosition = ImGui::GetWindowPos();

@@ -21,7 +21,7 @@ layout (std430, binding = 1) readonly buffer LightsData {
 
 layout (location = 0) out vec4 fragment;
 layout (location = 1) out int fragmentId;
-layout (location = 2) out vec4 depth;
+layout (location = 2) out vec4 brightness;
 
 in vec4 color;
 in vec3 normal;
@@ -153,5 +153,5 @@ void main() {
     fragment.rgb += phong * distanceIntensity;
   }
   fragmentId = id;
-  depth = vec4(vec3(linearize_depth(gl_FragCoord.z, nearPlane, farPlane) / farPlane), 1.0);
+  brightness = vec4(0.0, 0.0, 0.0, 1.0);
 }

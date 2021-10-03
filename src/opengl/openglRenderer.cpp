@@ -11,9 +11,9 @@ namespace engine {
 	  	glEnable(GL_DEPTH_TEST);
       glEnable(GL_CULL_FACE);
       setFrameBufferData();
-      setAxesData();
-      setGridData(100.0f, 100.0f);
-      setQuadData();
+      createAxes();
+      createGrid(100.0f, 100.0f);
+      createQuad();
 
       LightData lightData;
       lightData.position = { 0.0f, 0.0f, 7.0f, 0.0f };
@@ -87,7 +87,7 @@ namespace engine {
 			glDrawElements(GL_TRIANGLES, frameBufferData->vertexArray->indexBuffer->size, GL_UNSIGNED_INT, nullptr);
     }
 
-    void OpenglRenderer::setQuadData() {
+    void OpenglRenderer::createQuad() {
       std::array<float, 20> quad = {
         -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
         -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
@@ -104,52 +104,65 @@ namespace engine {
       auto indexBuffer = std::make_shared<OpenglIndexBuffer>(indices.data(), indices.size());
       quadData->vertexArray->pushVertexBuffer(vertexBuffer);
       quadData->vertexArray->setIndexBuffer(indexBuffer);
-      quadData->shader = setShader("visualize");
+      quadData->shaders.insert({"visualize", setShader("visualize")});
+      quadData->shaders.insert({"addBloom", setShader("addBloom")});
     }
 
     void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, const glm::vec4& color) {
-      quadData->shader->useProgram();
-      quadData->shader->setUniform1i(0, "hasTexture");
-      quadData->shader->setUniform4fv(color, "color");
-			glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+      quadData->shaders["visualize"]->useProgram();
+      quadData->shaders["visualize"]->setUniform1i(0, "hasTexture");
+      quadData->shaders["visualize"]->setUniform4fv(color, "color");
+			glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
       quadData->vertexArray->bind();
 			glDrawElements(GL_TRIANGLES, quadData->vertexArray->indexBuffer->size, GL_UNSIGNED_INT, nullptr);
-      quadData->shader->disuseProgram();
+      quadData->shaders["visualize"]->disuseProgram();
     }
 
     void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, std::shared_ptr<OpenglTexture> texture) {
       texture->bind(0);
-      quadData->shader->useProgram();
-      quadData->shader->setUniform1i(1, "hasTexture");
-			glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+      quadData->shaders["visualize"]->useProgram();
+      quadData->shaders["visualize"]->setUniform1i(1, "hasTexture");
+			glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
       quadData->vertexArray->bind();
 			glDrawElements(GL_TRIANGLES, quadData->vertexArray->indexBuffer->size, GL_UNSIGNED_INT, nullptr);
-      quadData->shader->disuseProgram();
+      quadData->shaders["visualize"]->disuseProgram();
     }
 
     void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, unsigned int& textureId, int layer, bool isDepthTexture) {
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D_ARRAY, textureId);
-      quadData->shader->useProgram();
+      quadData->shaders["visualize"]->useProgram();
       if(isDepthTexture) {
-        quadData->shader->setUniform1i(1, "isDepthTexture");
+        quadData->shaders["visualize"]->setUniform1i(1, "isDepthTexture");
       } else {
-        quadData->shader->setUniform1i(1, "hasTexture");
+        quadData->shaders["visualize"]->setUniform1i(1, "hasTexture");
       }
-      quadData->shader->setUniform1i(layer, "layer");
-			glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-    	glUniformMatrix4fv(glGetUniformLocation(quadData->shader->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+      quadData->shaders["visualize"]->setUniform1i(layer, "layer");
+			glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    	glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["visualize"]->program, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
       quadData->vertexArray->bind();
 			glDrawElements(GL_TRIANGLES, quadData->vertexArray->indexBuffer->size, GL_UNSIGNED_INT, nullptr);
-      quadData->shader->disuseProgram();
+      quadData->shaders["visualize"]->disuseProgram();
     }
 
-    void OpenglRenderer::setGridData(float x, float z) {
+    void OpenglRenderer::drawQuad(const glm::mat4& modelMatrix, unsigned int textureA, unsigned int textureB) {
+      quadData->shaders["addBloom"]->useProgram();
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, textureA);
+      glActiveTexture(GL_TEXTURE0 + 1);
+      glBindTexture(GL_TEXTURE_2D, textureB);
+			glUniformMatrix4fv(glGetUniformLocation(quadData->shaders["addBloom"]->program, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+      quadData->vertexArray->bind();
+			glDrawElements(GL_TRIANGLES, quadData->vertexArray->indexBuffer->size, GL_UNSIGNED_INT, nullptr);
+      quadData->shaders["addBloom"]->disuseProgram();
+    }
+
+    void OpenglRenderer::createGrid(float x, float z) {
       gridData = std::make_unique<GridData>();
       glGenBuffers(1, &gridData->bufferId);
       glBindBuffer(GL_ARRAY_BUFFER, gridData->bufferId);
@@ -293,7 +306,6 @@ namespace engine {
       cube->meshData = createMesh(MeshType::CUBE);
       cube->shaders.insert({"outline", setShader("outline")});
       cube->shaders.insert({"cube", setShader("cube")});
-      cube->shaders.insert({"basic", setShader("basic")});
       cube->shaders.insert({"depth", setShader("depth")});
       cube->shaders.insert({"depth2", setShader("depth2")});
       cube->material.ambientFactor    = 0.25f;
@@ -322,7 +334,6 @@ namespace engine {
       plane->meshData = createMesh(MeshType::PLANE);
       plane->shaders.insert({"outline", setShader("outline")});
       plane->shaders.insert({"cube", setShader("cube")});
-      plane->shaders.insert({"basic", setShader("basic")});
       plane->shaders.insert({"depth", setShader("depth")});
       plane->shaders.insert({"depth2", setShader("depth2")});
       plane->material.ambientFactor    = 0.25f;
@@ -501,7 +512,7 @@ namespace engine {
       }
     }
 
-    void OpenglRenderer::setAxesData() {
+    void OpenglRenderer::createAxes() {
       axesData = std::make_unique<AxesData>();
       glGenBuffers(2, axesData->bufferIds);
       glBindBuffer(GL_ARRAY_BUFFER, axesData->bufferIds[0]);
